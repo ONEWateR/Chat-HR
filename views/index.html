@@ -16,25 +16,49 @@
     </script>
 </head>
 <body>
+    <!-- 模态窗口 -->
+    <div class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span class="sr-only">关闭</span></button>
+                    <h4 class="modal-title" id="mySmallModalLabel">简单的添加好友</h4>
+                </div>
+                <br>
+                <form action="/do/addfriend" style="width:80%;margin:0 auto;" role="form" method="post" >
+                    <div class="form-group">
+                        <div class="input-group">
+                            <label>好友学号:</label>
+                            <input name="fid" class="form-control" type="text" placeholder="学号">
+                        </div>
+                    </div>
+                    <button class="btn btn-default" type="submit">添加</button>
+                </form>
+                <br>
+            </div>
+        </div>
+    </div>
     <!-- 顶部 -->
     <div class="topbar">
         <img id="logo" src="img/icon.png" />
         <ul class="nav topbar-nav ">
             <li class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                <img  class="avatar" src="img/<%= avatar %>" />&nbsp;&nbsp;<%= name %>
+                <img  class="avatar" src="img/upload/<%= avatar %>" />&nbsp;&nbsp;<%= name %>
                 <span class="caret"></span></a>
                 <ul class="dropdown-menu" role="menu">
                     <li><a href="setting" target="_blank">设置</a></li>
                     <li><a href="feedback" target="_blank">反馈</a></li>
                     <li><a href="about" target="_blank">关于</a></li>
+                    <li><a href="javascript:" target="_blank" data-toggle="modal" data-target=".bs-example-modal-sm">添加好友</a></li>
+                     
                     <li class="divider"></li>
                     <li><a href="#">退出</a></li>
                 </ul>
             </li>
       </ul>
     </div>
-    
+
     <div class="left-content">
         <ul class="list-type">
             <li class="active" id="1">最近</li>
@@ -56,7 +80,7 @@
            
     <div class="clearfix"></div>
     <footer>
-        <center>Powered By <a href="">ONEWateR</a></center>
+        <center>Powered By <a href="onewater2012.farbox.com" target="_blank">ONEWateR</a></center>
     </footer>
     <script src="js/jquery-1.9.1.min.js"></script>
     <script src="js/bootstrap.min.js"></script>

@@ -36,8 +36,8 @@
 <body>
     <div style="height:48px;"></div>
     <center>
-        <img  class="avatar" src="img/test.jpeg" />
-        <h4>124011215</h4>
+        <img  class="avatar" src="img/upload/<%= avatar %>" />
+        <h4><%=uid%></h4>
     </center>
     <hr/>
     
@@ -55,13 +55,20 @@
             <!-- 个人信息修改 -->
             <div class="tab-pane fade active" id="home">
                 <h4>个人信息修改</h4>
-                <form style="width:80%;margin:0 auto;" role="form">
+                <form action="/do/upload" enctype="multipart/form-data" style="width:80%;margin:0 auto;" role="form" method="post" >
+                    <div class="form-group">
+                        <div class="input-group">
+                            <label>头像：</label>
+                            <input name="file" class="form-control" type="file">
+                        </div>
+                    </div>
                     <div class="form-group">
                         <div class="input-group">
                             <label>昵称：</label>
-                            <input class="form-control" type="text" placeholder="昵称">
+                            <input name="username" class="form-control" type="text" placeholder="昵称" value="<%=name %>">
                         </div>
                     </div>
+                    <!-- 
                     <div class="form-group">
                         <div class="input-group">
                             <label>密码：</label>
@@ -75,6 +82,7 @@
                         </div>
                     </div>
                     <p>* 如果设置密码，则不会通过mysise进行身份验证，而是通过本机服务器进行验证。</p>
+                    -->
                     <button class="btn btn-default">确认修改</button>
                 </form>
             </div>

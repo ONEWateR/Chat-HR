@@ -87,7 +87,7 @@ function appendChat(con, single){
     // 添加对话框
     c.append( 
         "<li class='{0}' style='opacity:0;'>\
-            <img class='avatar' src='img/{3}' />\
+            <img class='avatar' src='img/upload/{3}' />\
             <div class='demo {1}'>\
                 <div class='article'><span class='triangle'></span>{2}</div>\
             </div>\
@@ -226,7 +226,7 @@ function refreshList(type){
             var info = data[i];
             friendList.append(
                 "<li id='{4}'>\
-                    <img class='avatar' src='img/{3}' />\
+                    <img class='avatar' src='img/upload/{3}' />\
                     <div class='list-item-info'>\
                         <p class='user-name'>{0}</p>\
                         <p class='last-info'>{1}</p>\

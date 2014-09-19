@@ -19,10 +19,12 @@ app.engine('.html', ejs.__express);
 app.set('view engine', 'html');
 app.use(express.favicon());
 app.use(express.logger('dev'));
-app.use(express.bodyParser());
+app.use(express.bodyParser({uploadDir:'./public/img/upload'}));
 app.use(express.methodOverride());
-app.use(express.cookieParser("onewater2012")); 
-app.use(express.session());
+app.use(express.cookieParser("4d4afc247a9ad602c33550a644a8ae6e")); 
+app.use(express.session({
+	cookie: { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 }
+}));
 app.use(app.router);
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -44,6 +46,9 @@ app.get('/users/:id', user.list);
 
 app.post('/do/feedback', routes.doFeedback);
 app.post('/do/login', routes.doLogin);
+
+app.post('/do/upload', routes.postFile);
+app.post('/do/addfriend', routes.addFriend);
 
 app.get('/get/friends', routes.getFriends);
 app.get('/get/groups', routes.getGroups);
