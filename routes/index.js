@@ -93,7 +93,13 @@ exports.doLogin = function(req, res){
 		    		// 第一次登录该系统
 		    		if (results.length == 0){
 		    			course.get(cookie, function(courseData){
-		    				var courseDatas = []
+		    				var courseDatas = [
+			    				{
+			    					uid: "C4CA4238A0B923820DCC509A6F75849B",
+			    					avatar: "group.png",
+			    					name: "在线交流群"
+			    				}
+		    				]
 		    				// 读取课程信息
 		    				courseData[1].forEach(function(elem){
 		    					courseDatas.push({
@@ -105,8 +111,6 @@ exports.doLogin = function(req, res){
 		    					})
 		    				})
 
-		    				console.info(courseDatas)
-
 			    			// 插入数据库中
 			    			var userData = {
 			    				uid: id,
@@ -115,8 +119,6 @@ exports.doLogin = function(req, res){
 			    				friends: [],
 			    				groups: courseDatas 
 			    			}
-
-			    			console.info(userData)
 
 			    			Users.insert(userData, function(err, docs) {
 			        			db.close()
@@ -156,7 +158,6 @@ exports.getFriends = function (req, res){
 		if(err) throw err;
 		var Users = db.collection('user')
 		  , id = req.session.user
-		id = 1240112215
 		Users.findOne({"uid": id}, function(err, result){
 			// 查询条件
 			var condition =	{
@@ -173,11 +174,7 @@ exports.getFriends = function (req, res){
 
 			// 返回好友信息 + 班群信息
 			Users.find(condition, limit).toArray(function(err, results) {
-				results.push({
-					uid: 1,
-					name: "在线交流群",
-					avatar: "group.png"
-				})
+
 				res.send(results)
 				db.close();
 			})
@@ -192,7 +189,6 @@ exports.getGroups = function (req, res){
 		if(err) throw err;
 		var Users = db.collection('user')
 		  , id = req.session.user
-		id = 1240112215
 		var limit = {
 			"_id": 0,
 			"groups": 1

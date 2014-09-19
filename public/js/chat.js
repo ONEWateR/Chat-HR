@@ -9,7 +9,7 @@ var ID = parseInt($.cookie("user"))
   , CurrentID = 0
   , NOREAD = {}
   , socket = io('http://172.16.103.36:3000')
-
+var reg = /[a-z]/
 /**
  * 获取历史信息
  */
@@ -126,7 +126,7 @@ function sendMessage(){
         con: msg,
         date: new Date()
     }
-    
+
     // 发送
     socket.emit('say', content);
 
@@ -144,8 +144,9 @@ function sendMessage(){
  */
 
 socket.on('say', function (data) {
+    
     // 群聊信息的话
-    if (typeof(data.io) == "string"){
+    if (data.to.match(reg)){
         if (CurrentID == data.to){
             appendChat(data);
         }else{
@@ -174,7 +175,7 @@ socket.on('say', function (data) {
 function saveChatInfo(data){
     // 获取ID
     var id = data.from.uid
-    if (id == ID || data.to < 10000) id = data.to
+    if (id == ID || data.to.toString().match(reg)) id = data.to
     if (typeof(HISTORY[id]) == "undefined") {
         HISTORY[id] = []
         HISTORYKEY.push(id)
@@ -271,7 +272,7 @@ function getListData(type) {
             break;
         case 2: // 好友列表
             USERS.forEach(function (user) {
-                if (typeof(user.uid) != "string")
+                if (typeof(user.uid) != "string" && user.uid != ID)
                 result.push({
                     user: {
                         id: user.uid,
@@ -285,7 +286,7 @@ function getListData(type) {
             break;
         case 3: // ONLY TEST
             USERS.forEach(function (user) {
-                if (typeof(user.uid) == "string")
+                if (user.uid.toString().match(reg))
                 result.push({
                     user: {
                         id: user.uid,
@@ -346,7 +347,6 @@ function registerClickEvent(){
 function setNORead(id, num){
     if (typeof(NOREAD[id]) == "undefined") 
         NOREAD[id] = 0
-
     if (num == -1){
         NOREAD[id]++
     }else{

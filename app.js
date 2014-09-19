@@ -84,7 +84,6 @@ io.on('connection', function(socket){
 						sockets[elem.uid] = []
 					sockets[elem.uid].push(socket)
 				})
-
 				db.close();
 			});
 		})
@@ -95,8 +94,10 @@ io.on('connection', function(socket){
 	socket.on('say', function (data) {
 		// 判断信息是否群发，即是否在班群上发送的信息
 		var id = data.to;
-		if (typeof(id) == "string") {
-			sockets[id].forEach(function (client){
+		var reg = /[a-z]/
+		if (id.match(reg)) {
+			console.info(sockets[data.to])
+			sockets[data.to].forEach(function (client){
 				if (client.name != data.from.uid){
 					client.emit('say', data);
 				}
@@ -105,7 +106,7 @@ io.on('connection', function(socket){
 	    	var clients = io.sockets.sockets;
 	    	// 遍历找到该用户
 		    clients.forEach(function (client) {
-		    	if (client.name == data.to) {
+		    	if (client.name == parseInt(data.to)) {
 		        	// 触发该用户客户端的 say 事件
 		        	client.emit('say', data);
 		        }
