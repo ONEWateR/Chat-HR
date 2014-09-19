@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>后台管理</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="css/main.css" rel="stylesheet" media="screen">
+    <!--[if lt IE 9]>
+    <script src="../../docs-assets/js/html5shiv.js"></script>
+    <script src="../../docs-assets/js/respond.min.js"></script>
+    <![endif]-->
+    <style>
+        #content {
+            width: 61.8%;
+            margin: 0 auto;
+        }
+        #left {
+            width: 38.2%;
+            max-width: 208px;
+            padding: 12px;
+            float: left;
+        }
+        #right {
+            width: 61.8%;
+            height: 650px;
+            padding: 12px;
+            float: left;
+        }
+        .tab-pane h4 {
+            margin-bottom: 24px;
+        }
+    </style>
+    
+</head>
+<body>
+    <div style="height:48px;"></div>
+    <center>
+        <img  class="avatar" src="img/icon.png" />
+        <h4>后台管理</h4>
+    </center>
+    <hr/>
+    
+    
+    
+    <div id="content">
+        
+        
+        <ul class="nav nav-tabs" role="tablist" id="myTab">
+            <li class="active"><a href="#mass" role="tab" data-toggle="tab">信息群发</a></li>
+            <li><a href="#statistics" role="tab" data-toggle="tab">统计功能</a></li>
+            <li><a href="#messages" role="tab" data-toggle="tab">反馈信息查看</a></li>
+        </ul>
+
+        <div class="tab-content">
+            <!-- 个人信息修改 -->
+            <div class="tab-pane fade active" id="mass">
+                <h4>信息群发</h4>
+                <form style="width:90%;margin:0 auto;" role="form">
+                    <div class="form-group">
+                        <div class="input-group">
+                            <label>信息：</label>
+                            <textarea class="form-control" type="text" placeholder="群发信息"></textarea>
+                        </div>
+                    </div>
+                    <button class="btn btn-default">发送</button>
+                </form>
+            </div>
+             <div class="tab-pane fade" id="statistics">
+                <h4>信息统计(2014.09)</h4>
+                
+                <table class="table table-bordered" style="width:80%;margin-left:24px;">
+                    <thead>
+                        <tr>
+                            <th>日期</th>
+                            <th>使用人数</th>
+                            <th>信息交换量</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                          <td>1</td>
+                          <td>2</td>
+                          <td>10</td>
+                        </tr>
+                    </tbody>
+                </table>
+                 <a href="" target="_blank" style="margin-left:24px;">查看详细信息 / 历史信息</a>
+            </div>
+            <div class="tab-pane fade" id="messages">
+                <h4>反馈信息查看</h4>
+                <table class="table table-bordered" style="width:80%;margin-left:24px;">
+                    <thead>
+                        <tr>
+                            <th width="15%">日期</th>
+                            <th width="35%">用户信息</th>
+                            <th width="40%">内容</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% for(var i=0; i<FBdata.length; i++) { %>
+                            <tr>
+                              <td><%= FBdata[i].date %></td>
+                              <td>IP : <%= FBdata[i].ip %><br>
+                                  浏览器 : <%= FBdata[i].browser %>
+                                </td>
+                              <td><%= FBdata[i].content %></td>
+                              <td><button class="btn btn-warning">删除</button></td>
+                            </tr>
+                        <% } %>
+                        
+                    </tbody>
+                </table>
+                
+            </div>
+        </div>
+
+
+        
+        
+
+    </div>
+    <footer>
+        <center>Powered By ONEWateR</center>
+    </footer>
+    <script>
+    $(function () {
+        $('#myTab a:last').tab('show')
+    })
+    </script>
+    <script src="js/jquery-1.9.1.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>内网在线聊天</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="css/main.css" rel="stylesheet" media="screen">
+    <!--[if lt IE 9]>
+    <script src="../../docs-assets/js/html5shiv.js"></script>
+    <script src="../../docs-assets/js/respond.min.js"></script>
+    <![endif]-->
+    <style>
+        body {
+            background: url(img/bg.jpg);
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <center><img  class="avatar" src="img/test.jpeg" /></center>
+        <form id="login" role="form" action="do/login" method="post">
+            <div class="form-group">
+                <div class="input-group">
+                    <div class="input-group-addon"><span class="glyphicon glyphicon-user"></span></div>
+                    <input name="id" class="form-control" type="text" placeholder="输入学号">
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="input-group">
+                    <div class="input-group-addon"><span class="glyphicon glyphicon-briefcase"></span></div>
+                    <input name="password" class="form-control" type="password" placeholder="密码">
+                </div>
+            </div>
+            <div class="checkbox">
+                <label><input type="checkbox">记住我</label>
+            </div>
+            <button class="btn btn-default" type="submit">登录</button>
+        </form>
+    </div>
+    <footer>
+        <center>Powered By ONEWateR</center>
+    </footer>
+    <script src="js/jquery-1.9.1.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+</body>
+</html>

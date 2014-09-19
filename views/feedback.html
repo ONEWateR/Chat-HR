@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>反了个馈</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="css/main.css" rel="stylesheet" media="screen">
+    <!--[if lt IE 9]>
+    <script src="../../docs-assets/js/html5shiv.js"></script>
+    <script src="../../docs-assets/js/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body>
+    <br><br>
+    <center>
+        <div id="info" class="alert alert-success" role="alert" style="opacity:0;height:0px;">
+            提交成功！
+        </div>
+        有好的意见或建议,可以及时反馈给我们<br><br>
+        <textarea id="feedback-content" style="width:300px;height:200px;border-radius: 5px;"></textarea>
+        <br><br>
+        <button id="submit-button" style="width:80px;" class="btn btn-info" onclick="submit();">提交</button>
+        
+        <br><br>
+        <p style="color:#444;font-size:12px;">同时也欢迎将使用过程中出现的bug<br>及一些可以改进产品体验的建议提交到<a href="#">Github上的Issue</a></p>
+    </center>
+    <br><br>
+    <footer>
+        <center>Powered By ONEWateR</center>
+    </footer>
+
+    <script src="js/jquery-1.9.1.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+        //feedback-content
+        function submit(){
+            var content = $("#feedback-content").val()
+                bSubmit = $("#submit-button")
+                info = $("#info")
+                config = {
+                    submit: bSubmit.html(),
+                    success: "提交成功！" ,
+                    error: "提交失败！请稍后重试。"
+                }
+            info.animate({opacity:'0', height:'0px'})
+            $.ajax({
+                url:'do/feedback',
+                type:'POST',
+                timeout:10000,
+                data:{con:content},
+                dataType:'html',
+                beforeSend: function (e){
+                    bSubmit.addClass("disabled")
+                    bSubmit.html("...")
+                },
+
+                success:function(html){
+                    enableButton()
+                    showInfo("success")
+                    $("#feedback-content").val("")
+                },
+           
+                error: function(e){
+                    enableButton()
+                    showInfo("error")
+                }
+            });
+
+            // 激活提交按钮
+            function enableButton(){
+                bSubmit.removeClass("disabled")
+                bSubmit.html(config.submit)
+            }
+
+            // 显示提交结果信息
+            function showInfo(type){
+                if (type == "success") {
+                    info.removeClass("alert-danger")
+                    info.addClass("alert-success")
+                    info.html(config.success)
+                }
+                if (type == "error") {
+                    info.removeClass("alert-success")
+                    info.addClass("alert-danger")
+                    info.html(config.error)
+                }
+                info.animate({opacity:'1', height:'54px'}, 1000)
+            }
+        }
+    </script>
+</body>
+</html>

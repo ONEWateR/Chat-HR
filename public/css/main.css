@@ -1,0 +1,338 @@
+body {
+    font-family: "Microsoft YaHei","Arial","Helvetica","sans-serif";
+    font-size: 14px;
+}
+#logo {
+    width: 38px;
+    margin-top: -10px;
+    margin-left: 10px;
+}
+
+.content {
+    width: 90%;
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 120px 8px;
+    margin-top: 18px;
+    
+    /*border: 1px solid #444;*/
+    border-radius: 5px;
+}
+
+.avatar {
+    border-radius: 50%;
+    /*box-shadow: 2px 0 5px rgba(214, 214, 215, 0.9), -2px 0 5px rgba(214, 214, 215, 0.9);*/
+    width: 40px;
+}
+
+#login {
+    width: 54%;
+    margin: 28px auto;
+}
+
+#login .form-group {
+    margin-bottom: 28px;
+}
+
+.topbar {
+    height: 61px;
+    border-bottom: 1px solid #EEE;
+    padding: 20px;
+}
+
+.topbar-nav {
+    width: 180px;
+    margin: 0px 0px;
+    position:absolute;
+    right:0px;
+    top:0px;
+}
+
+.topbar .avatar {
+    box-shadow: 2px 0 5px rgba(214, 214, 215, 0.9), -2px 0 5px rgba(214, 214, 215, 0.9);
+    width: 40px;
+    margin-right: 8px;
+}
+
+.friend-list li {
+    padding: 16px 0;
+    list-style: none;
+    border-bottom: 1px solid #e8e8e8;
+    margin-left: -40px;
+    cursor: pointer;
+     transition: all 0.5s;
+    -webkit-transition: all 0.5s;
+}
+
+.friend-list li:hover {
+    background: #eee;
+}
+
+.friend-list li.active:hover {
+    background: #c0d3ff;
+} 
+
+.friend-list li img{
+    float: left;
+    margin-left: 10px;
+}
+
+.friend-list .active {
+    background: #c0d3ff;
+}
+
+.list-item-info {
+    line-height: 10px;
+    margin-top: 2px;
+    float: left;
+    margin-left: 10px;
+}
+.list-item-info .last-info {
+    color: #999;
+}
+
+.friend-list {
+    margin-top: -10px;
+    height: 500px;
+    overflow-x: hidden;
+    overflow-y: scroll;
+}
+
+.mylist::-webkit-scrollbar {
+width: 10px; 
+}
+.mylist::-webkit-scrollbar-button {
+display: none; 
+}
+.mylist::-webkit-scrollbar-track {
+background: white; 
+}
+.mylist::-webkit-scrollbar-thumb {
+min-height: 1rem;
+background-color: #ccc;
+background-clip: padding-box;
+border: 3px solid white;
+border-radius: 5px; 
+}
+.mylist::-webkit-scrollbar-thumb:active {
+background-color: #999;
+border-width: 2px; 
+}
+
+.chat-area {
+    float: left;
+    width: calc(100% - 361px);
+}
+
+.list-type {
+    margin-left: -40px;
+    
+}
+.list-type li {
+    list-style: none;
+    width: 120px;
+    height: 48px;
+    text-align: center;
+    line-height: 3.4em;
+    float: left;
+    border-bottom: 1px solid #e8e8e8;
+    border-right: 1px solid #e8e8e8;
+    transition: all 0.5s;
+    -webkit-transition: all 0.5s;
+    cursor: pointer;
+    color: #333;
+}
+
+
+
+
+.list-type li:nth-child(3) {
+    border-right: none;
+}
+
+.list-type li:hover {
+    background: #eee;
+}
+.list-type .active {
+    font-weight: bold;   
+}
+
+
+.chat-area ul {
+    padding: 36px 0px;
+    list-style: none;
+    background: #EEE;
+   
+}
+
+.list-item-noread {
+    float: right;
+    margin-right: 20px;
+    margin-top: 5px;
+}
+
+.badge {
+    background: #ec0f0f;
+    margin-right: 18px;
+    margin-top: 8px;
+}
+/* 气泡 */
+.left-chat,.right-chat {
+    width: 320px;
+    margin-bottom: 28px;
+    position: relative;
+}
+
+
+.left-chat {
+    float: left;
+    margin-left: 32px;
+}
+.right-chat {
+    float: right;
+    margin-right: 32px;
+}
+.left-chat .avatar {
+    float: left;
+}
+.right-chat .avatar {
+    float: right;
+}
+
+.demo {
+    margin-left: 12px;
+    padding-left:50px;
+    position:relative;
+    /*float: left;*/
+}
+
+.right-chat .demo {
+    margin-right: 10px;
+}
+ 
+.triangle {
+    position:absolute;
+    top:18px;
+    margin-top:-8px;
+    left:42px;
+    display:block;
+    width:0;
+    height:0;
+    overflow:hidden;
+    line-height:0;
+    font-size:0;
+    border-bottom:8px solid hsla(0, 0%, 100%, 0);
+    border-top:8px solid hsla(0, 0%, 100%, 0);
+    border-left:none;
+    border-right:8px solid #fff;
+}
+ 
+.demo .article {
+    float:left;
+    color:#000;
+    display:inline-block;
+    *display:inline; zoom:1;
+    padding:5px 10px;
+    border:1px solid #fff;
+    background:#eee;
+    border-radius:5px;
+    background-color: #fff;
+    line-height: 1.6em;
+    
+}
+ 
+.fr { padding-left:0px; padding-right:50px; }
+ 
+.fr .triangle {
+    left:auto;
+    right:42px;
+    border-bottom:8px solid hsla(0, 0%, 100%, 0);
+    border-top:8px solid hsla(0, 0%, 100%, 0);
+    border-right:none;
+    border-left:8px solid #fff;
+}
+ 
+.fr .article {
+    float:right;
+}
+
+.enter {
+    background: #FFF;
+}
+.enter * {
+    display: inline;
+}
+.enter .form-control{
+    width: 80%;
+}
+
+#enter-text {
+    height: 34px !important;
+    width: calc(100% - 130px) !important;
+    margin-left: 8px;
+}
+.left-content {
+    width: 361px;
+    float: left;
+    border-right: 1px solid #e8e8e8;
+}
+
+.chat-content {
+    height: 500px;
+    overflow-x: hidden;
+    overflow-y: scroll;
+}
+
+
+
+footer {
+    margin-top: 48px;
+    color: #999;
+    font-size: 12px;
+}
+
+
+
+/* ==================== 类型选择按钮 ==================== */
+.category-button {
+    height: auto;
+    margin-top: 20px;
+    margin-bottom: 36px;
+    margin-left: auto;
+    margin-right: auto;
+}
+.category-button ul {
+    list-style: none;
+}
+.category-button ul li {
+    display: inline;
+    width: 120px;
+    height: 20px;
+    border: 1px solid #e1e1e1;
+    padding: 10px 20px;
+    background: #FFF;
+    margin-left: -1px;
+    text-align: center;
+    font-size: 14px;
+}
+.category-button ul li:hover {
+    background: #eb0089;
+    /* border: 1px solid #FFF; */
+}
+.category-button ul li:hover a,.category-button ul li.active a {
+    color: #FFF;
+}
+.category-button ul li.active {
+    background: #EB008B;
+    /* border: 1px solid #FFF; */
+}
+.category-button ul li a:hover {
+    background: #EB008B;
+    color: #FFF;
+}
+.category-button ul li a {
+    color: #333;
+}
+.category-button span {
+    margin-right: 4px;
+}

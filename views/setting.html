@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>个人设置</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="css/main.css" rel="stylesheet" media="screen">
+    <!--[if lt IE 9]>
+    <script src="../../docs-assets/js/html5shiv.js"></script>
+    <script src="../../docs-assets/js/respond.min.js"></script>
+    <![endif]-->
+    <style>
+        #content {
+            width: 61.8%;
+            margin: 0 auto;
+        }
+        #left {
+            width: 38.2%;
+            max-width: 208px;
+            padding: 12px;
+            float: left;
+        }
+        #right {
+            width: 61.8%;
+            height: 650px;
+            padding: 12px;
+            float: left;
+        }
+        .tab-pane h4 {
+            margin-bottom: 24px;
+        }
+    </style>
+    
+</head>
+<body>
+    <div style="height:48px;"></div>
+    <center>
+        <img  class="avatar" src="img/test.jpeg" />
+        <h4>124011215</h4>
+    </center>
+    <hr/>
+    
+    
+    
+    <div id="content">
+        
+        
+        <ul class="nav nav-tabs" role="tablist" id="myTab">
+            <li class="active"><a href="#home" role="tab" data-toggle="tab">个人信息修改</a></li>
+            <li><a href="#messages" role="tab" data-toggle="tab">清理缓存</a></li>
+        </ul>
+
+        <div class="tab-content">
+            <!-- 个人信息修改 -->
+            <div class="tab-pane fade active" id="home">
+                <h4>个人信息修改</h4>
+                <form style="width:80%;margin:0 auto;" role="form">
+                    <div class="form-group">
+                        <div class="input-group">
+                            <label>昵称：</label>
+                            <input class="form-control" type="text" placeholder="昵称">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-group">
+                            <label>密码：</label>
+                            <input class="form-control" type="password" placeholder="如不需要更改可不填">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-group">
+                            <label>密码确认：</label>
+                            <input class="form-control" type="password" placeholder="密码确认">
+                        </div>
+                    </div>
+                    <p>* 如果设置密码，则不会通过mysise进行身份验证，而是通过本机服务器进行验证。</p>
+                    <button class="btn btn-default">确认修改</button>
+                </form>
+            </div>
+            <div class="tab-pane fade" id="messages">
+                <h4>清理缓存</h4>
+                <center>
+                    <button type="button" class="btn btn-primary btn-lg">点我清理</button>
+                    <br><br>
+                    <p>* 清理缓存会删除之前的聊天记录，服务器并不会保存你的聊天记录。</p>
+                </center>
+                
+            </div>
+        </div>
+
+
+        
+        
+
+    </div>
+    <footer>
+        <center>Powered By ONEWateR</center>
+    </footer>
+    <script src="js/jquery-1.9.1.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script>
+    $(function () {
+        $('#myTab a:last').tab('show')
+    })
+    </script>
+
+</body>
+</html>
