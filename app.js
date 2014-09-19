@@ -45,6 +45,8 @@ app.get('/users/:id', user.list);
 app.post('/do/feedback', routes.doFeedback);
 app.post('/do/login', routes.doLogin);
 
+app.get('/get/friends', routes.getFriends);
+app.get('/get/groups', routes.getGroups);
 
 
 // 启动及端口
@@ -57,7 +59,7 @@ server.listen(app.get('port'), function(){
 });
 
 var io = require('socket.io')(server)
-  , sockets = [[]]
+  , sockets = {}
   , mongo = require('mongodb').MongoClient
   , dbConfig = {
     	dbURL: 'mongodb://127.0.0.1:27017/chat'
@@ -76,11 +78,11 @@ io.on('connection', function(socket){
 		mongo.connect(dbConfig.dbURL, function(err, db) {
 			if(err) throw err;
 			var collection = db.collection('user');
-			collection.find({"uid": data.user}, {"groups" : 1, "_id": 0}).toArray(function(err, results) {
-				results[0].groups.forEach(function (elem){
-					if (typeof(sockets[elem]) == "undefined")
-						sockets[elem] = []
-					sockets[elem].push(socket)
+			collection.findOne({"uid": data.user}, {"groups" : 1, "_id": 0}, function(err, result) {
+				result.groups.forEach(function (elem){
+					if (typeof(sockets[elem.uid]) == "undefined")
+						sockets[elem.uid] = []
+					sockets[elem.uid].push(socket)
 				})
 
 				db.close();
@@ -92,8 +94,8 @@ io.on('connection', function(socket){
 	// 消息处理
 	socket.on('say', function (data) {
 		// 判断信息是否群发，即是否在班群上发送的信息
-		var id = parseInt(data.to);
-		if (id < 100000) {
+		var id = data.to;
+		if (typeof(id) == "string") {
 			sockets[id].forEach(function (client){
 				if (client.name != data.from.uid){
 					client.emit('say', data);

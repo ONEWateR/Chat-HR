@@ -3,9 +3,9 @@
  */
 
 var ID = parseInt($.cookie("user"))
-  , HISTORY = []
+  , HISTORY = {}
   , HISTORYKEY = []
-  , USERS = JSON.parse($.cookie("friends"))
+  , USERS = []
   , CurrentID = 0
   , NOREAD = {}
   , socket = io('http://172.16.103.36:3000')
@@ -17,7 +17,7 @@ var ID = parseInt($.cookie("user"))
 if($.cookie("history")){
     HISTORY = JSON.parse($.cookie("history"))
 }else{
-    HISTORY = [{}]
+    HISTORY = {}
 }
 
 /**
@@ -26,6 +26,25 @@ if($.cookie("history")){
 
 socket.emit('online', {user: ID});
 
+$.ajax({
+    type: "GET",
+    url: "/get/friends",
+    success: function(data){
+        data.forEach(function(elem){
+            USERS.push(elem)
+        })
+    }
+})
+
+$.ajax({
+    type: "GET",
+    url: "/get/groups",
+    success: function(data){
+        data.forEach(function(elem){
+            USERS.push(elem)
+        })
+    }
+})
 
 /**
  * 创建历史对话内容
@@ -126,7 +145,7 @@ function sendMessage(){
 
 socket.on('say', function (data) {
     // 群聊信息的话
-    if (data.to < 100000){
+    if (typeof(data.io) == "string"){
         if (CurrentID == data.to){
             appendChat(data);
         }else{
@@ -252,7 +271,7 @@ function getListData(type) {
             break;
         case 2: // 好友列表
             USERS.forEach(function (user) {
-                if (user.uid != ID && user.uid > 100000)
+                if (typeof(user.uid) != "string")
                 result.push({
                     user: {
                         id: user.uid,
@@ -266,7 +285,7 @@ function getListData(type) {
             break;
         case 3: // ONLY TEST
             USERS.forEach(function (user) {
-                if (user.uid != ID && user.uid < 100000)
+                if (typeof(user.uid) == "string")
                 result.push({
                     user: {
                         id: user.uid,
@@ -309,7 +328,7 @@ function registerClickEvent(){
         if (!$(this).hasClass("active")){
             $(".friend-list li").removeClass("active")
             $(this).addClass("active")
-            var id = parseInt($(this).attr("id"))
+            var id = $(this).attr("id")
             CurrentID = id
             createChatContent(HISTORY[id])
             setNORead(CurrentID, 0)

@@ -9,13 +9,15 @@ var mongo = require('mongodb').MongoClient
     }
 
 exports.index = function(req, res){
-	if (!req.session.user || !req.session.data) {
+	if (!req.session.user) {
 		res.redirect('/login')
 		return
 	}
+	/*
 	var data = req.session.data
 	console.log(data)
-	res.render('index', JSON.parse(data));
+	res.render('index', JSON.parse(data));*/
+	res.render('index', {name: "a", avatar: "aaa"})
 };
 
 exports.feedback = function(req, res){
@@ -57,8 +59,12 @@ exports.doLogin = function(req, res){
 	var id = parseInt(req.body.id.trim())
       , password = req.body.password.trim();
 
+	req.session.user = id;
+	res.cookie("user", req.body.id);
+	res.redirect("/")
 
-/*
+	return
+
     // 账号密码不能为空
     if (id == "" || password == ""){
     	res.redirect("/login")
@@ -66,39 +72,96 @@ exports.doLogin = function(req, res){
     }
 
 	var sise = require("../common/sise/login")
+	  , course = require("../common/sise/course")
+	  , md5 = require('MD5');
+
 	sise.login(id, password, function(status, cookie) {
+
+		// 登录处理
 		if (status == 0){ // 登录失败
 			res.render('login', { info: '登录失败！' });
 		}else{ // 登录成功
-			req.session.user = id;
-			res.redirect("/")
+
+		  	mongo.connect(dbConfig.dbURL, function(err, db) {
+		    	if(err) throw err;
+		    	
+		    	var Users = db.collection('user');
+		    	Users.find({"uid": id}).toArray(function(err, results) {
+
+		    		//console.info(results[0].friends)
+		    		
+		    		// 第一次登录该系统
+		    		if (results.length == 0){
+		    			course.get(cookie, function(courseData){
+		    				var courseDatas = []
+		    				// 读取课程信息
+		    				courseData[1].forEach(function(elem){
+		    					courseDatas.push({
+		    						uid: md5(elem.name + "@" + elem.class),
+		    						avatar: "group.png",
+		    						name: elem.name + " @ " + elem.class,
+		    						teacher: elem.teacher,
+		    						place: elem.place
+		    					})
+		    				})
+
+		    				console.info(courseDatas)
+
+			    			// 插入数据库中
+			    			var userData = {
+			    				uid: id,
+			    				name: courseData[0],
+			    				avatar: "user.jpg",
+			    				friends: [],
+			    				groups: courseDatas 
+			    			}
+
+			    			console.info(userData)
+
+			    			Users.insert(userData, function(err, docs) {
+			        			db.close()
+			        			req.session.data = JSON.stringify(userData)
+			        			req.session.user = id;
+			        			res.redirect("/")
+							});
+
+		    			})
+		    		}else{
+		    			req.session.user = id;
+		    			req.session.data = JSON.stringify(results[0])
+		    			res.redirect("/")
+		    		} // END IF (results.length == 0)
+		    		
+				});
+			})
+
 		}
 	})
-*/
-
-	req.session.user = id;
-	res.cookie("user", req.body.id);
-
-  	// 查询数据库是否存在该账号
-  	mongo.connect(dbConfig.dbURL, function(err, db) {
-    	if(err) throw err;
-    	var USERS = db.collection('user');
-
-    	USERS.find({"uid": id}).toArray(function(err, results) {
-
-    		//console.info(results[0].friends)
-    		req.session.data = JSON.stringify(results[0])
 
 
-    		// 若不存在
-    		if (results.length == 0){
-    			// TODO: 插入数据库中
-    		}
+	
+	//res.cookie("user", req.body.id);
 
-    		// 查询条件
+
+
+	//res.redirect("/")
+	
+	
+
+}
+
+
+exports.getFriends = function (req, res){
+	mongo.connect(dbConfig.dbURL, function(err, db) {
+		if(err) throw err;
+		var Users = db.collection('user')
+		  , id = req.session.user
+		id = 1240112215
+		Users.findOne({"uid": id}, function(err, result){
+			// 查询条件
 			var condition =	{
 				    			uid: {
-				    				$in: results[0].friends.concat(id)
+				    				$in: result.friends.concat(id)
 				    			}
 				    		}
 			  , limit     = {
@@ -109,29 +172,36 @@ exports.doLogin = function(req, res){
 				    		};
 
 			// 返回好友信息 + 班群信息
-			USERS.find(condition, limit).toArray(function(err, results) {
+			Users.find(condition, limit).toArray(function(err, results) {
 				results.push({
 					uid: 1,
 					name: "在线交流群",
 					avatar: "group.png"
 				})
-				res.cookie("friends", JSON.stringify(results));
-				res.redirect("/")
-				//console.log(results)
+				res.send(results)
 				db.close();
 			})
-/*
-    		req.session.data = JSON.stringify(results[0])
-    		res.redirect("/")*/
-    		//console.info(results[0])
-    		
-		});
+		})
+		
 	})
+}
 
-	//res.redirect("/")
-	
-	
 
+exports.getGroups = function (req, res){
+	mongo.connect(dbConfig.dbURL, function(err, db) {
+		if(err) throw err;
+		var Users = db.collection('user')
+		  , id = req.session.user
+		id = 1240112215
+		var limit = {
+			"_id": 0,
+			"groups": 1
+		}
+		Users.findOne({"uid": id}, limit, function(err, result){
+			res.send(result.groups)
+		})
+		
+	})
 }
 
 function authentication(req, res) {

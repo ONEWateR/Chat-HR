@@ -45,17 +45,18 @@
                 }
             info.animate({opacity:'0', height:'0px'})
             $.ajax({
-                url:'do/feedback',
-                type:'POST',
-                timeout:10000,
-                data:{con:content},
-                dataType:'html',
+                url: 'do/feedback',
+                type: 'POST',
+                timeout: 10000,
+                data: {con:content},
+                dataType: 'html',
                 beforeSend: function (e){
                     bSubmit.addClass("disabled")
                     bSubmit.html("...")
                 },
 
                 success:function(html){
+                    alert(html)
                     enableButton()
                     showInfo("success")
                     $("#feedback-content").val("")
