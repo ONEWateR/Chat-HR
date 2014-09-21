@@ -14,6 +14,36 @@ var reg = /[a-z]/
  * 获取历史信息
  */
 
+
+var notify = {  
+    time: 0,  
+    title: document.title,  
+    timer: null,  
+    // 显示新消息提示  
+    show: function () {  
+        var title = notify.title.replace("【　　　】", "").replace("【新消息】", "");  
+        // 定时器，设置消息切换频率闪烁效果就此产生  
+        notify.timer = setTimeout(function () {  
+            notify.time++;  
+            notify.show();  
+            if (notify.time % 2 == 0) {  
+                document.title = "【新消息】" + title  
+            }  
+
+            else {  
+                document.title = "【　　　】" + title  
+            };  
+        }, 600);  
+        return [notify.timer, notify.title];  
+    },  
+    // 取消新消息提示  
+    clear: function () {  
+        clearTimeout(notify.timer);  
+        document.title = notify.title;  
+    }  
+};  
+
+
 if($.cookie("history")){
     HISTORY = JSON.parse($.cookie("history"))
 }else{
@@ -163,9 +193,37 @@ socket.on('say', function (data) {
         }
     }
 
+    // 如果当前页面属于激活状态
+    if (document[state] == "hidden")
+        notify.show()
+
     // 保存信息
     saveChatInfo(data)
 });
+
+var hidden, state, visibilityChange; 
+if (typeof document.hidden !== "undefined") {
+    hidden = "hidden";
+    visibilityChange = "visibilitychange";
+    state = "visibilityState";
+} else if (typeof document.mozHidden !== "undefined") {
+    hidden = "mozHidden";
+    visibilityChange = "mozvisibilitychange";
+    state = "mozVisibilityState";
+} else if (typeof document.msHidden !== "undefined") {
+    hidden = "msHidden";
+    visibilityChange = "msvisibilitychange";
+    state = "msVisibilityState";
+} else if (typeof document.webkitHidden !== "undefined") {
+    hidden = "webkitHidden";
+    visibilityChange = "webkitvisibilitychange";
+    state = "webkitVisibilityState";
+}
+
+document.addEventListener(visibilityChange, function() {
+    if (document[state] == "visible")
+        notify.clear()
+}, false);
 
 /**
  * 保存历史对话
@@ -337,12 +395,19 @@ function registerClickEvent(){
     })
 }
 
+
+
+function isHidden(){
+
+}
+
 /**
  * TODO: 设置未读数据
  * @param {Number} id
  * @param {Number} -1: 原数据+1, 
                    other: 正常设置
  */
+
 
 function setNORead(id, num){
     if (typeof(NOREAD[id]) == "undefined") 
@@ -352,6 +417,7 @@ function setNORead(id, num){
     }else{
         NOREAD[id] = num
     }
+
 
     $(".friend-list li[id="+ id +"] .pull-right").html(getNORead(id));
 }
