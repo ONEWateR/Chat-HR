@@ -395,9 +395,12 @@ $(".list-type li").click(function(){
     }
 })
 
+
+
 // Debug:
 // TODO:
+/*
 refreshList(3)
 $(".friend-list li[id=1]").addClass("active")
-CurrentID = 1
-registerClickEvent()
+CurrentID = 0
+registerClickEvent()*/

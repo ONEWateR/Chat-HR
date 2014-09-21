@@ -131,7 +131,7 @@ exports.addFriend = function (req, res) {
 exports.doLogin = function(req, res){
 	var id = parseInt(req.body.id.trim())
       , password = req.body.password.trim();
-
+/*
 	req.session.user = id;
 	req.session.data = JSON.stringify({name: "zzzza", avatar: "user.jpg"})
 	res.cookie("user", req.body.id);
@@ -139,7 +139,7 @@ exports.doLogin = function(req, res){
 	res.redirect("/")
 
 	return
-
+*/
     // 账号密码不能为空
     if (id == "" || password == ""){
     	res.redirect("/login")
@@ -148,7 +148,7 @@ exports.doLogin = function(req, res){
 
 	var sise = require("../common/sise/login")
 	  , course = require("../common/sise/course")
-	  
+	  , md5 = require("md5")
 
 	sise.login(id, password, function(status, cookie) {
 
@@ -170,7 +170,7 @@ exports.doLogin = function(req, res){
 		    			course.get(cookie, function(courseData){
 		    				var courseDatas = [
 			    				{
-			    					uid: "C4CA4238A0B923820DCC509A6F75849B",
+			    					uid: "c4ca4238a0b923820dcc509a6f75849b",
 			    					avatar: "group.png",
 			    					name: "在线交流群"
 			    				}
