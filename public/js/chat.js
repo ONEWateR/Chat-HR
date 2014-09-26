@@ -133,18 +133,20 @@ function appendChat(con, single){
       , style = [
             from == ID ? type[1] : type[0],
             from == ID ? type[2] : "",
-            from == ID ? ID : from
+            from == ID ? ID : from,
+            from == ID ? "" : con.from.name
         ]
 
     // 添加对话框
     c.append( 
         "<li class='{0}' style='opacity:0;'>\
+            <p style='font-size: 8px;color: #9C9C9C'>{4}</p>\
             <img class='avatar' src='img/upload/{3}' />\
             <div class='demo {1}'>\
                 <div class='article'><span class='triangle'></span>{2}</div>\
             </div>\
         </li>\
-        <div class='clearfix'></div>".format(style[0], style[1], con.con, con.from.avatar))
+        <div class='clearfix'></div>".format(style[0], style[1], con.con, con.from.avatar, style[3]))
 
     // 如果不是创建历史对话的情况下，即单条添加时
     if (single){
@@ -284,6 +286,8 @@ function saveChatInfo(data){
     // TODO: 避免频繁刷新
     if ($(".list-type li[id=1]").hasClass("active"))
         refreshList(1)
+
+    $.cookie("history", JSON.stringify(HISTORY), {expires : 365});
 }
 
 
