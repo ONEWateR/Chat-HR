@@ -152,7 +152,8 @@ function sendMessage(){
       , content;
     if (msg.length == 0) return
     msg = msg.replace(/\s/gi, "&nbsp;")
-    msg = msg.replace(/\n/gi, "<br>")
+             .replace(/</gi, "&lt;")
+             .replace(/>/gi, "&gt;")
     
     // 整理信息
     content = {
