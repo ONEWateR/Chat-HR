@@ -5,7 +5,7 @@
 
 var express = require('express')
   , routes = require('./routes')
-  , user = require('./routes/user')
+  , action = require('./routes/action')
   , http = require('http')
   , path = require('path')
   , ejs = require('ejs');
@@ -42,81 +42,22 @@ app.get('/login', routes.login);
 app.get('/setting', routes.setting);
 app.get('/admin', routes.admin);
 
-app.get('/users/:id', user.list);
+// POST操作
+app.post('/do/feedback', action.doFeedback);
+app.post('/do/login', action.doLogin);
+app.post('/do/upload', action.doUpdateInfo);
+app.post('/do/addfriend', action.doAddFriend);
 
-app.post('/do/feedback', routes.doFeedback);
-app.post('/do/login', routes.doLogin);
-
-app.post('/do/upload', routes.postFile);
-app.post('/do/addfriend', routes.addFriend);
-
-app.get('/get/friends', routes.getFriends);
-app.get('/get/groups', routes.getGroups);
+// 信息返回
+app.get('/get/friends', action.getFriends);
+app.get('/get/groups', action.getGroups);
 
 
 // 启动及端口
-
-
-
 var server = http.createServer(app)
 server.listen(app.get('port'), function(){
 	console.log('Express server listening on port ' + app.get('port'));
 });
 
-var io = require('socket.io')(server)
-  , sockets = {}
-  , mongo = require('mongodb').MongoClient
-  , dbConfig = {
-    	dbURL: 'mongodb://127.0.0.1:27017/chat'
-    }
-
-io.on('connection', function(socket){
-
-	// 上线处理
-	socket.on('online', function (data) {
-		// TODO : 重复登录处理
-
-		// 将上线的用户名存储为 socket 对象的属性，以区分每个 socket 对象，方便后面使用
-		socket.name = data.user;
-		
-		// 获取用户的群ID
-		mongo.connect(dbConfig.dbURL, function(err, db) {
-			if(err) throw err;
-			var collection = db.collection('user');
-			collection.findOne({"uid": data.user}, {"groups" : 1, "_id": 0}, function(err, result) {
-				result.groups.forEach(function (elem){
-					if (typeof(sockets[elem.uid]) == "undefined")
-						sockets[elem.uid] = []
-					sockets[elem.uid].push(socket)
-				})
-				db.close();
-			});
-		})
-
-	});
-
-	// 消息处理
-	socket.on('say', function (data) {
-		// 判断信息是否群发，即是否在班群上发送的信息
-		var id = data.to;
-		var reg = /[a-z]/
-		if (id.match(reg)) {
-			console.info(sockets[data.to])
-			sockets[data.to].forEach(function (client){
-				if (client.name != data.from.uid){
-					client.emit('say', data);
-				}
-			})
-	    } else {
-	    	var clients = io.sockets.sockets;
-	    	// 遍历找到该用户
-		    clients.forEach(function (client) {
-		    	if (client.name == parseInt(data.to)) {
-		        	// 触发该用户客户端的 say 事件
-		        	client.emit('say', data);
-		        }
-		    });
-	    } // END IF
-	});
-
-});
+// 启动聊天相关操作
+require("./common/chat/init").init(server)

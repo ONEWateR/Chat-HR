@@ -10,11 +10,10 @@ var ID = parseInt($.cookie("user"))
   , NOREAD = {}
   , socket = io('http://172.16.103.36:3000')
 var reg = /[a-z]/
+
 /**
- * 获取历史信息
+ * 提醒模块
  */
-
-
 var notify = {  
     time: 0,  
     title: document.title,  
@@ -43,38 +42,44 @@ var notify = {
     }  
 };  
 
+Init();
 
-if($.cookie("history")){
-    HISTORY = JSON.parse($.cookie("history"))
-}else{
-    HISTORY = {}
-}
 
 /**
- * 发送用户上线信号
+ * 初始化操作
  */
-
-socket.emit('online', {user: ID});
-
-$.ajax({
-    type: "GET",
-    url: "/get/friends",
-    success: function(data){
-        data.forEach(function(elem){
-            USERS.push(elem)
-        })
+function Init(){
+    // 发送用户上线信号
+    socket.emit('online', {user: ID});
+    // 获取好友以及班群信息
+    $.ajax({
+        type: "GET",
+        url: "/get/friends",
+        success: function(data){
+            data.forEach(function(elem){
+                USERS.push(elem)
+            })
+        }
+    })
+    $.ajax({
+        type: "GET",
+        url: "/get/groups",
+        success: function(data){
+            data.forEach(function(elem){
+                USERS.push(elem)
+            })
+        }
+    })
+    // 获取历史对话信息
+    if($.cookie("history")){
+        HISTORY = JSON.parse($.cookie("history"))
+    }else{
+        HISTORY = {}
     }
-})
+    // 处理提醒模块
+    handleNotify()
+}
 
-$.ajax({
-    type: "GET",
-    url: "/get/groups",
-    success: function(data){
-        data.forEach(function(elem){
-            USERS.push(elem)
-        })
-    }
-})
 
 /**
  * 创建历史对话内容
@@ -201,29 +206,36 @@ socket.on('say', function (data) {
     saveChatInfo(data)
 });
 
-var hidden, state, visibilityChange; 
-if (typeof document.hidden !== "undefined") {
-    hidden = "hidden";
-    visibilityChange = "visibilitychange";
-    state = "visibilityState";
-} else if (typeof document.mozHidden !== "undefined") {
-    hidden = "mozHidden";
-    visibilityChange = "mozvisibilitychange";
-    state = "mozVisibilityState";
-} else if (typeof document.msHidden !== "undefined") {
-    hidden = "msHidden";
-    visibilityChange = "msvisibilitychange";
-    state = "msVisibilityState";
-} else if (typeof document.webkitHidden !== "undefined") {
-    hidden = "webkitHidden";
-    visibilityChange = "webkitvisibilitychange";
-    state = "webkitVisibilityState";
-}
 
-document.addEventListener(visibilityChange, function() {
-    if (document[state] == "visible")
-        notify.clear()
-}, false);
+/**
+ * 处理提醒模块
+ */
+var state; 
+
+function handleNotify(){
+    var visibilityChange; 
+    // 多浏览器处理
+    if (typeof document.hidden !== "undefined") {
+        visibilityChange = "visibilitychange";
+        state = "visibilityState";
+    } else if (typeof document.mozHidden !== "undefined") {
+        visibilityChange = "mozvisibilitychange";
+        state = "mozVisibilityState";
+    } else if (typeof document.msHidden !== "undefined") {
+        visibilityChange = "msvisibilitychange";
+        state = "msVisibilityState";
+    } else if (typeof document.webkitHidden !== "undefined") {
+        visibilityChange = "webkitvisibilitychange";
+        state = "webkitVisibilityState";
+    }
+
+    // 当前窗口重新激活，取消新消息提醒
+    document.addEventListener(visibilityChange, function() {
+        if (document[state] == "visible")
+            notify.clear()
+    }, false);
+
+}
 
 /**
  * 保存历史对话
@@ -395,12 +407,6 @@ function registerClickEvent(){
     })
 }
 
-
-
-function isHidden(){
-
-}
-
 /**
  * TODO: 设置未读数据
  * @param {Number} id
@@ -460,13 +466,3 @@ $(".list-type li").click(function(){
         refreshList(parseInt($(this).attr("id")))
     }
 })
-
-
-
-// Debug:
-// TODO:
-/*
-refreshList(3)
-$(".friend-list li[id=1]").addClass("active")
-CurrentID = 0
-registerClickEvent()*/
