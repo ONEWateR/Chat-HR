@@ -28,7 +28,6 @@ var notify = {
             if (notify.time % 2 == 0) {  
                 document.title = "【新消息】" + title  
             }  
-
             else {  
                 document.title = "【　　　】" + title  
             };  
@@ -42,7 +41,24 @@ var notify = {
     }  
 };  
 
+
+emojify.setConfig({
+
+    only_crawl_id    : null,            // Use to restrict where emojify.js applies
+    img_dir          : 'img/emoji',     // Directory for emoji images
+    ignored_tags     : {                // Ignore the following tags
+        'SCRIPT'  : 1,
+        'TEXTAREA': 1,
+        'A'       : 1,
+        'PRE'     : 1,
+        'CODE'    : 1
+    }
+});
+
+emojify.run();
+
 Init();
+
 
 
 /**
@@ -68,6 +84,7 @@ function Init(){
             data.forEach(function(elem){
                 USERS.push(elem)
             })
+            refreshList(3)
         }
     })
     // 获取历史对话信息
@@ -136,6 +153,8 @@ function appendChat(con, single){
         // 渐变出现消息
         $("#chat-content li:last").animate({opacity:'1'}, 800)
     }
+
+    emojify.run();
 }
 
 /**
@@ -467,3 +486,37 @@ $(".list-type li").click(function(){
         refreshList(parseInt($(this).attr("id")))
     }
 })
+
+/**
+ * 为表情添加点击事件
+ */
+
+$("#emoji img").click(function(){
+    var box = $("#enter-text")
+    box.val($("#enter-text").val() + $(this).attr("title"))
+    $("#emoji").css("display", "none")
+    box.focus()
+
+})
+
+function showEmoji(){
+    
+    if ($("#emoji").css("display") == "none")
+        $("#emoji").css("display", "block")
+    else
+        $("#emoji").css("display", "none")
+    $("html, body").animate({ scrollTop: document.body.scrollHeight }, 860);
+}
+
+document.onkeydown = function(){
+    if (window.event.keyCode == 17){
+        showEmoji();
+    }
+};
+
+$(".list-type li").removeClass("active")
+$(".list-type li[id=3]").addClass("active")
+refreshList(3)
+CurrentID = "c4ca4238a0b923820dcc509a6f75849b"
+createChatContent(HISTORY["c4ca4238a0b923820dcc509a6f75849b"])
+$("#enter-text").focus()
