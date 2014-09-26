@@ -1,4 +1,4 @@
-body {
+﻿body {
     font-family: "Microsoft YaHei","Arial","Helvetica","sans-serif";
     font-size: 14px;
 }
@@ -335,4 +335,24 @@ footer {
 }
 .category-button span {
     margin-right: 4px;
+}
+
+.emoji {
+    width: 1.5em;
+    height: 1.5em;
+    display: inline-block;
+    margin-bottom: -0.25em;
+    margin:2px;
+}
+
+
+#emoji img {
+    margin:2px;
+    transition: all 0.2s;
+    -webkit-transition: all 0.2s;
+}
+
+#emoji img:hover{
+    -webkit-transform:scale(1.5);
+     cursor: pointer;
 }

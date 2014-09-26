@@ -10,11 +10,10 @@ var ID = parseInt($.cookie("user"))
   , NOREAD = {}
   , socket = io('http://172.16.103.36:3000')
 var reg = /[a-z]/
+
 /**
- * 获取历史信息
+ * 提醒模块
  */
-
-
 var notify = {  
     time: 0,  
     title: document.title,  
@@ -29,7 +28,6 @@ var notify = {
             if (notify.time % 2 == 0) {  
                 document.title = "【新消息】" + title  
             }  
-
             else {  
                 document.title = "【　　　】" + title  
             };  
@@ -44,37 +42,61 @@ var notify = {
 };  
 
 
-if($.cookie("history")){
-    HISTORY = JSON.parse($.cookie("history"))
-}else{
-    HISTORY = {}
-}
+emojify.setConfig({
+
+    only_crawl_id    : null,            // Use to restrict where emojify.js applies
+    img_dir          : 'img/emoji',     // Directory for emoji images
+    ignored_tags     : {                // Ignore the following tags
+        'SCRIPT'  : 1,
+        'TEXTAREA': 1,
+        'A'       : 1,
+        'PRE'     : 1,
+        'CODE'    : 1
+    }
+});
+
+emojify.run();
+
+Init();
+
+
 
 /**
- * 发送用户上线信号
+ * 初始化操作
  */
-
-socket.emit('online', {user: ID});
-
-$.ajax({
-    type: "GET",
-    url: "/get/friends",
-    success: function(data){
-        data.forEach(function(elem){
-            USERS.push(elem)
-        })
+function Init(){
+    // 发送用户上线信号
+    socket.emit('online', {user: ID});
+    // 获取好友以及班群信息
+    $.ajax({
+        type: "GET",
+        url: "/get/friends",
+        success: function(data){
+            data.forEach(function(elem){
+                USERS.push(elem)
+            })
+        }
+    })
+    $.ajax({
+        type: "GET",
+        url: "/get/groups",
+        success: function(data){
+            data.forEach(function(elem){
+                USERS.push(elem)
+            })
+            refreshList(3)
+        }
+    })
+    // 获取历史对话信息
+    if($.cookie("history")){
+        HISTORY = JSON.parse($.cookie("history"))
+    }else{
+        HISTORY = {}
     }
-})
+    // 处理提醒模块
+    handleNotify()
+}
 
-$.ajax({
-    type: "GET",
-    url: "/get/groups",
-    success: function(data){
-        data.forEach(function(elem){
-            USERS.push(elem)
-        })
-    }
-})
 
 /**
  * 创建历史对话内容
@@ -111,18 +133,20 @@ function appendChat(con, single){
       , style = [
             from == ID ? type[1] : type[0],
             from == ID ? type[2] : "",
-            from == ID ? ID : from
+            from == ID ? ID : from,
+            from == ID ? "" : con.from.name
         ]
 
     // 添加对话框
     c.append( 
         "<li class='{0}' style='opacity:0;'>\
+            <p style='font-size: 8px;color: #9C9C9C'>{4}</p>\
             <img class='avatar' src='img/upload/{3}' />\
             <div class='demo {1}'>\
                 <div class='article'><span class='triangle'></span>{2}</div>\
             </div>\
         </li>\
-        <div class='clearfix'></div>".format(style[0], style[1], con.con, con.from.avatar))
+        <div class='clearfix'></div>".format(style[0], style[1], con.con, con.from.avatar, style[3]))
 
     // 如果不是创建历史对话的情况下，即单条添加时
     if (single){
@@ -131,6 +155,8 @@ function appendChat(con, single){
         // 渐变出现消息
         $("#chat-content li:last").animate({opacity:'1'}, 800)
     }
+
+    emojify.run();
 }
 
 /**
@@ -147,7 +173,8 @@ function sendMessage(){
       , content;
     if (msg.length == 0) return
     msg = msg.replace(/\s/gi, "&nbsp;")
-    msg = msg.replace(/\n/gi, "<br>")
+             .replace(/</gi, "&lt;")
+             .replace(/>/gi, "&gt;")
     
     // 整理信息
     content = {
@@ -201,29 +228,36 @@ socket.on('say', function (data) {
     saveChatInfo(data)
 });
 
-var hidden, state, visibilityChange; 
-if (typeof document.hidden !== "undefined") {
-    hidden = "hidden";
-    visibilityChange = "visibilitychange";
-    state = "visibilityState";
-} else if (typeof document.mozHidden !== "undefined") {
-    hidden = "mozHidden";
-    visibilityChange = "mozvisibilitychange";
-    state = "mozVisibilityState";
-} else if (typeof document.msHidden !== "undefined") {
-    hidden = "msHidden";
-    visibilityChange = "msvisibilitychange";
-    state = "msVisibilityState";
-} else if (typeof document.webkitHidden !== "undefined") {
-    hidden = "webkitHidden";
-    visibilityChange = "webkitvisibilitychange";
-    state = "webkitVisibilityState";
-}
 
-document.addEventListener(visibilityChange, function() {
-    if (document[state] == "visible")
-        notify.clear()
-}, false);
+/**
+ * 处理提醒模块
+ */
+var state; 
+
+function handleNotify(){
+    var visibilityChange; 
+    // 多浏览器处理
+    if (typeof document.hidden !== "undefined") {
+        visibilityChange = "visibilitychange";
+        state = "visibilityState";
+    } else if (typeof document.mozHidden !== "undefined") {
+        visibilityChange = "mozvisibilitychange";
+        state = "mozVisibilityState";
+    } else if (typeof document.msHidden !== "undefined") {
+        visibilityChange = "msvisibilitychange";
+        state = "msVisibilityState";
+    } else if (typeof document.webkitHidden !== "undefined") {
+        visibilityChange = "webkitvisibilitychange";
+        state = "webkitVisibilityState";
+    }
+
+    // 当前窗口重新激活，取消新消息提醒
+    document.addEventListener(visibilityChange, function() {
+        if (document[state] == "visible")
+            notify.clear()
+    }, false);
+
+}
 
 /**
  * 保存历史对话
@@ -252,6 +286,8 @@ function saveChatInfo(data){
     // TODO: 避免频繁刷新
     if ($(".list-type li[id=1]").hasClass("active"))
         refreshList(1)
+
+    $.cookie("history", JSON.stringify(HISTORY), {expires : 365});
 }
 
 
@@ -395,12 +431,6 @@ function registerClickEvent(){
     })
 }
 
-
-
-function isHidden(){
-
-}
-
 /**
  * TODO: 设置未读数据
  * @param {Number} id
@@ -461,12 +491,36 @@ $(".list-type li").click(function(){
     }
 })
 
+/**
+ * 为表情添加点击事件
+ */
 
+$("#emoji img").click(function(){
+    var box = $("#enter-text")
+    box.val($("#enter-text").val() + $(this).attr("title"))
+    $("#emoji").css("display", "none")
+    box.focus()
 
-// Debug:
-// TODO:
-/*
+})
+
+function showEmoji(){
+    
+    if ($("#emoji").css("display") == "none")
+        $("#emoji").css("display", "block")
+    else
+        $("#emoji").css("display", "none")
+    $("html, body").animate({ scrollTop: document.body.scrollHeight }, 860);
+}
+
+document.onkeydown = function(){
+    if (window.event.keyCode == 17){
+        showEmoji();
+    }
+};
+
+$(".list-type li").removeClass("active")
+$(".list-type li[id=3]").addClass("active")
 refreshList(3)
-$(".friend-list li[id=1]").addClass("active")
-CurrentID = 0
-registerClickEvent()*/
+CurrentID = "c4ca4238a0b923820dcc509a6f75849b"
+createChatContent(HISTORY["c4ca4238a0b923820dcc509a6f75849b"])
+$("#enter-text").focus()
