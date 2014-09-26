@@ -7,7 +7,7 @@ Chat-HR
 挺简单的一个在线聊天软件
 - 自动创建班群
 - 群聊 + 私聊
-
+- 表情聊天
 
 ![image](http://ntu.so/di/5LCKJ/hr-chat.png)
 
