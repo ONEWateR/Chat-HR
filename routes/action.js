@@ -64,6 +64,8 @@ exports.doLogin = function(req, res){
 		    					})
 		    				})
 
+		    				courseDatas = courseDatas.unique();
+
 			    			var userData = {
 			    				uid: id,
 			    				name: courseData[0],
@@ -233,3 +235,15 @@ exports.doFeedback = function(req, res){
 		})
 	}
 };
+
+/* 去除重复数据 */
+Array.prototype.unique= function(){
+    var result = [], hash = {};
+    for (var i = 0, elem; (elem = this[i]) != null; i++) {
+        if (!hash[elem]) {
+            result.push(elem);
+            hash[elem] = true;
+        }
+    }
+    return result;
+}
