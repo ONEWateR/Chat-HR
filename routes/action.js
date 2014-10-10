@@ -217,7 +217,7 @@ exports.doAddFriend = function (req, res) {
  */
 exports.doFeedback = function(req, res){
 	if (req.body.con){
-    // 生成数据
+    	// 生成数据
 		var data = {
 			date: DataFormat(),
 			ip: getClientIp(req),

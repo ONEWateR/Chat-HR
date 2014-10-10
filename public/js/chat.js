@@ -513,7 +513,7 @@ function showEmoji(){
 }
 
 document.onkeydown = function(){
-    if (window.event.keyCode == 17){
+    if (event.ctrlKey && window.event.keyCode == 81){
         showEmoji();
     }
 };

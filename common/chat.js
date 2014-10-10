@@ -59,6 +59,17 @@ exports.init = function(server){
 			    });
 		    }
 		});
+
+		// 断开连接
+		socket.on('disconnect', function() {
+			for(var key in sockets){  
+        		var index = sockets[key].indexOf(socket)
+        		if (index != -1){
+					sockets[key].splice(index, 1)
+				}
+    		}
+		})
+
 	});
 
 }
