@@ -56,10 +56,13 @@
                 },
 
                 success:function(html){
-                    alert(html)
                     enableButton()
-                    showInfo("success")
-                    $("#feedback-content").val("")
+                    if (html == "success"){
+                        showInfo("success")
+                        $("#feedback-content").val("")
+                    }else{
+                        showInfo("error")
+                    }
                 },
            
                 error: function(e){

@@ -42,6 +42,11 @@ exports.doLogin = function(req, res){
 		    	var Users = db.collection('user');
 		    	Users.find({"uid": id}).toArray(function(err, results) {
 
+		    		// 统计登录
+		    		var statistics = db.collection('statistics')
+		    		var data = {"uid" : id, date : Date()}
+		    		statistics.insert(data, function(err, docs) {})
+
 		    		// 第一次登录该系统
 		    		if (results.length == 0){
 		    			sise.getCourseInfo(cookie, function(courseData){
@@ -219,7 +224,7 @@ exports.doFeedback = function(req, res){
 	if (req.body.con){
     	// 生成数据
 		var data = {
-			date: DataFormat(),
+			date: DateFormat(),
 			ip: getClientIp(req),
 			browser: req.headers['user-agent'],
 			content: req.body.con
@@ -247,3 +252,31 @@ Array.prototype.unique= function(){
     }
     return result;
 }
+
+
+/**
+ * 时间格式转换，格式 yyyy/mm/dd
+ */
+function DateFormat() {
+	var now = new Date()
+	  , y = now.getFullYear()
+	  , m = now.getMonth() + 1
+	  , d = now.getDate()
+	  , result = "";
+	result += y;
+	result += "/"
+	result += m < 10 ? "0" + m : m;
+	result += "/"
+	result += d < 10 ? "0" + d : d;
+	return result;
+}
+
+/**
+ * 获取客户端IP
+ */
+function getClientIp(req) {
+	return req.headers['x-forwarded-for'] ||
+	req.connection.remoteAddress ||
+	req.socket.remoteAddress ||
+	req.connection.socket.remoteAddress;
+};

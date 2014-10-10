@@ -81,29 +81,3 @@ exports.setting = function(req, res){
 };
 
 
-/**
- * 获取客户端IP
- */
-function getClientIp(req) {
-	return req.headers['x-forwarded-for'] ||
-	req.connection.remoteAddress ||
-	req.socket.remoteAddress ||
-	req.connection.socket.remoteAddress;
-};
-
-/**
- * 时间格式转换，格式 yyyy/mm/dd
- */
-function DataFormat() {
-	var now = new Date()
-	  , y = now.getFullYear()
-	  , m = now.getMonth() + 1
-	  , d = now.getDate()
-	  , result = "";
-	result += y;
-	result += "/"
-	result += m < 10 ? "0" + m : m;
-	result += "/"
-	result += d < 10 ? "0" + d : d;
-	return result;
-}
