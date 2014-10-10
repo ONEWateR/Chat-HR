@@ -57,9 +57,8 @@ exports.init = function(server){
 			        	client.emit('say', data);
 			        }
 			    });
-		    } // END IF
+		    }
 		});
-
 	});
 
 }

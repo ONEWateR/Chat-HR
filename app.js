@@ -60,4 +60,4 @@ server.listen(app.get('port'), function(){
 });
 
 // 启动聊天相关操作
-require("./common/chat/init").init(server)
+require("./common/chat").init(server)

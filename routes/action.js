@@ -27,8 +27,7 @@ exports.doLogin = function(req, res){
     	return
     }
     // 导入模块
-	var sise = require("../common/sise/login")
-	  , course = require("../common/sise/course")
+	var sise = require("../common/sise")
 	  , md5 = require("md5")
 
 	// 登录处理
@@ -45,7 +44,7 @@ exports.doLogin = function(req, res){
 
 		    		// 第一次登录该系统
 		    		if (results.length == 0){
-		    			course.get(cookie, function(courseData){
+		    			sise.getCourseInfo(cookie, function(courseData){
 		    				// 添加在线交流群
 		    				var courseDatas = [
 			    				{
