@@ -59,17 +59,20 @@ exports.doLogin = function(req, res){
 			    				}
 		    				]
 		    				// 读取课程信息
+		    				var tempHash = {}
 		    				courseData[1].forEach(function(elem){
-		    					courseDatas.push({
-		    						uid: md5(elem.name + "@" + elem.class),
-		    						avatar: "group.png",
-		    						name: elem.name + " @ " + elem.class,
-		    						teacher: elem.teacher,
-		    						place: elem.place
-		    					})
+		    					var md5ID = md5(elem.name + "@" + elem.class)
+		    					if (tempHash[md5ID] == null){
+			    					courseDatas.push({
+			    						uid: md5ID,
+			    						avatar: "group.png",
+			    						name: elem.name + " @ " + elem.class,
+			    						teacher: elem.teacher,
+			    						place: elem.place
+			    					})
+			    					tempHash[md5ID] = true;
+		    					}
 		    				})
-
-		    				courseDatas = courseDatas.unique();
 
 			    			var userData = {
 			    				uid: id,
@@ -240,19 +243,6 @@ exports.doFeedback = function(req, res){
 		})
 	}
 };
-
-/* 去除重复数据 */
-Array.prototype.unique= function(){
-    var result = [], hash = {};
-    for (var i = 0, elem; (elem = this[i]) != null; i++) {
-        if (!hash[elem]) {
-            result.push(elem);
-            hash[elem] = true;
-        }
-    }
-    return result;
-}
-
 
 /**
  * 时间格式转换，格式 yyyy/mm/dd
