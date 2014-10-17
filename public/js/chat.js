@@ -1,3 +1,28 @@
+var SaveUtils = (function (){
+    var checkLocalStorage = function(){
+        if(!window.localStorage){
+            alert('你使用的浏览器不支持localStorage， 请使用高级点的浏览器(喂');
+        }
+    }
+    var STATIC = {
+        get : function(key, defaultValue) {
+            if (localStorage[key])
+                return JSON.parse(localStorage[key])
+            else
+                return defaultValue
+        },
+        save : function(key, value){
+            localStorage[key] = JSON.stringify(value);
+        },
+        clear: function(key){
+            localStorage[key].removeItem(key)
+        }
+    }
+    return STATIC;
+})();
+
+
+
 /**
  * 全局变量声明
  */
@@ -40,6 +65,7 @@ var notify = {
         document.title = notify.title;  
     }  
 };  
+
 
 
 emojify.setConfig({
@@ -88,11 +114,8 @@ function Init(){
         }
     })
     // 获取历史对话信息
-    if($.cookie("history")){
-        HISTORY = JSON.parse($.cookie("history"))
-    }else{
-        HISTORY = {}
-    }
+    HISTORY = SaveUtils.get("historyData", {})
+    
     // 处理提醒模块
     handleNotify()
 }
@@ -287,7 +310,7 @@ function saveChatInfo(data){
     if ($(".list-type li[id=1]").hasClass("active"))
         refreshList(1)
 
-    $.cookie("history", JSON.stringify(HISTORY), {expires : 365});
+    SaveUtils.save("historyData", HISTORY);
 }
 
 
@@ -524,3 +547,6 @@ refreshList(3)
 CurrentID = "c4ca4238a0b923820dcc509a6f75849b"
 createChatContent(HISTORY["c4ca4238a0b923820dcc509a6f75849b"])
 $("#enter-text").focus()
+
+
+
