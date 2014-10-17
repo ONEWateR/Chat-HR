@@ -15,7 +15,7 @@ var SaveUtils = (function (){
             localStorage[key] = JSON.stringify(value);
         },
         clear: function(key){
-            localStorage[key].removeItem(key)
+            localStorage.removeItem(key)
         }
     }
     return STATIC;
@@ -426,13 +426,13 @@ function getUserInfo(uid){
     }
     if (uid == 10086) {
         return {
-            id: 10086,
+            uid: 10086,
             name: "萌萌哒☆管理员",
             avatar: "admin.png"
         }
     }
     return  {
-                id: 0,
+                uid: 0,
                 name: "unkonw",
                 avatar: "unkonw.jpg"
             }
