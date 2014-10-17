@@ -1,6 +1,7 @@
 var mongo = require('mongodb').MongoClient
   , dbConfig = { dbURL: 'mongodb://127.0.0.1:27017/chat' }
-  , fs = require('fs');
+  , fs = require('fs')
+  , blacklist = require('../common/blacklist')
 
 var DEBUG = true;
 
@@ -8,6 +9,11 @@ var DEBUG = true;
  * 登录处理
  */
 exports.doLogin = function(req, res){
+	if (!blacklist.check(req, 5, 5)){
+		res.send(404)
+		return;
+	}
+
 	var id = parseInt(req.body.id.trim())
       , password = req.body.password.trim();
 
@@ -34,7 +40,7 @@ exports.doLogin = function(req, res){
 	sise.login(id, password, function(status, cookie) {
 		// 登录结果状态判断
 		if (status == 0){ // 登录失败
-			res.render('login', { info: '登录失败！' });
+			res.send(404)
 		}else{ // 登录成功
 		  	mongo.connect(dbConfig.dbURL, function(err, db) {
 		    	if(err) throw err;
@@ -240,10 +246,15 @@ exports.doAddFriend = function (req, res) {
 	})
 }
 
+
 /**
  * 反馈信息处理
  */
 exports.doFeedback = function(req, res){
+	if (!blacklist.check(req, 5, 10)){
+		res.send(404)
+		return;
+	}
 	if (req.body.con){
     	// 生成数据
 		var data = {
