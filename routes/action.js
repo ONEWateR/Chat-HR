@@ -50,6 +50,9 @@ exports.doLogin = function(req, res){
 		    		// 第一次登录该系统
 		    		if (results.length == 0){
 		    			sise.getCourseInfo(cookie, function(courseData){
+
+				    		var Groups = db.collection('groups');
+
 		    				// 添加在线交流群
 		    				var courseDatas = [
 			    				{
@@ -58,11 +61,26 @@ exports.doLogin = function(req, res){
 			    					name: "在线交流群"
 			    				}
 		    				]
+		    				Groups.update({"gid": courseDatas[0].uid}, {"$push": {"people": id}}, function(err, docs) {})
+
 		    				// 读取课程信息
 		    				var tempHash = {}
 		    				courseData[1].forEach(function(elem){
+
 		    					var md5ID = md5(elem.name + "@" + elem.class)
+
 		    					if (tempHash[md5ID] == null){
+			    					
+				    				Groups.findOne({"gid": md5ID}, function(err, result){
+				    					if (result == null){
+				    						Groups.insert({"gid": md5ID, "people": [id]}, function(err, docs) {})
+				    					}else{
+				    						Groups.update({"gid": md5ID}, 
+				    									  {"$push": {"people": id}},
+				    									  function(err, docs) {})
+				    					}
+				    				})
+
 			    					courseDatas.push({
 			    						uid: md5ID,
 			    						avatar: "group.png",
@@ -114,6 +132,8 @@ exports.getFriends = function (req, res){
 		return;
 	}
 	mongo.connect(dbConfig.dbURL, function(err, db) {
+
+
 		var Users = db.collection('user')
 		  , id = req.session.user
 		Users.findOne({"uid": id}, function(err, result){

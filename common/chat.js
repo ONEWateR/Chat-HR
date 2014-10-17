@@ -20,8 +20,8 @@ exports.init = function(server){
 			// 获取用户的群ID
 			mongo.connect(dbConfig.dbURL, function(err, db) {
 				if(err) throw err;
-				var collection = db.collection('user');
-				collection.findOne({"uid": data.user}, {"groups" : 1, "_id": 0}, function(err, result) {
+				var Users = db.collection('user');
+				Users.findOne({"uid": data.user}, {"groups": 1, "_id": 0, "messages": 1}, function(err, result) {
 					result.groups.forEach(function (elem){
 						/* 
 						 * 将该用户的socket添加到群数组中，
@@ -31,7 +31,13 @@ exports.init = function(server){
 							sockets[elem.uid] = []
 						sockets[elem.uid].push(socket)
 					})
-					db.close();
+					result.messages.forEach(function (msg){
+						socket.emit('say', msg);
+					})
+					Users.update({uid: data.user}, {"$set": {"messages": []}}, function(err, docs){
+						db.close();
+					})
+					
 				});
 			})
 
@@ -43,11 +49,38 @@ exports.init = function(server){
 			var id = data.to;
 			var reg = /[a-z]/
 			if (id.match(reg)) {
-				sockets[data.to].forEach(function (client){
-					if (client.name != data.from.uid){
-						client.emit('say', data);
-					}
-				})
+				mongo.connect(dbConfig.dbURL, function(err, db) {
+
+					var Groups = db.collection('groups');
+
+					Groups.findOne({"gid": id}, function(err, result){
+						var people = result.people;
+
+						// 群发在线的
+						sockets[data.to].forEach(function (client){
+							if (client.name != data.from.uid){
+								// 去除在线人数
+								client.emit('say', data);
+								people.splice(people.indexOf(client.name), 1)
+							}
+						});
+
+						var Users = db.collection('user');
+						people.splice(people.indexOf(data.from.uid), 1)
+
+						for (var i = 0; i < people.length; i++) {
+							Users.update({uid: people[i]}, {"$push": {"messages": data}}, function(err, docs){
+								if (i == people.length - 1) 
+									db.close();
+							})
+						};
+
+					});
+
+				});
+				
+
+
 		    } else {
 		    	var clients = io.sockets.sockets;
 		    	// 遍历找到该用户
@@ -73,3 +106,4 @@ exports.init = function(server){
 	});
 
 }
+
