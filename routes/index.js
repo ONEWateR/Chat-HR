@@ -1,6 +1,6 @@
 var mongo = require('mongodb').MongoClient
   , dbConfig = { dbURL: 'mongodb://127.0.0.1:27017/chat' }
-  , fs = require('fs');
+  
 
 /**
  * 主页
@@ -80,7 +80,6 @@ exports.setting = function(req, res){
 
 };
 
-
 /**
  * 获取客户端IP
  */
@@ -90,20 +89,3 @@ function getClientIp(req) {
 	req.socket.remoteAddress ||
 	req.connection.socket.remoteAddress;
 };
-
-/**
- * 时间格式转换，格式 yyyy/mm/dd
- */
-function DataFormat() {
-	var now = new Date()
-	  , y = now.getFullYear()
-	  , m = now.getMonth() + 1
-	  , d = now.getDate()
-	  , result = "";
-	result += y;
-	result += "/"
-	result += m < 10 ? "0" + m : m;
-	result += "/"
-	result += d < 10 ? "0" + d : d;
-	return result;
-}

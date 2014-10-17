@@ -56,15 +56,9 @@
             <!-- 个人信息修改 -->
             <div class="tab-pane fade active" id="mass">
                 <h4>信息群发</h4>
-                <form style="width:90%;margin:0 auto;" role="form">
-                    <div class="form-group">
-                        <div class="input-group">
-                            <label>信息：</label>
-                            <textarea class="form-control" type="text" placeholder="群发信息"></textarea>
-                        </div>
-                    </div>
-                    <button class="btn btn-default">发送</button>
-                </form>
+                <label>信息：</label>
+                <textarea style="width: 400px;height: 300px;" id="msg" class="form-control" type="text" placeholder="群发信息"></textarea>
+                <button class="btn btn-default" onclick="SendMessage()">发送</button>
             </div>
              <div class="tab-pane fade" id="statistics">
                 <h4>信息统计(2014.09)</h4>
@@ -116,20 +110,31 @@
             </div>
         </div>
 
-
-        
-        
-
     </div>
     <footer>
         <center>Powered By ONEWateR</center>
     </footer>
-    <script>
-    $(function () {
-        $('#myTab a:last').tab('show')
-    })
-    </script>
+
     <script src="js/jquery-1.9.1.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
+    <script>
+        $(function () {
+            $('#myTab a:last').tab('show')
+        })
+        function SendMessage(){
+            var content = $("#msg").val();
+            $.ajax({
+                url: 'do/mass',
+                type: 'POST',
+                data: {con: content},
+                dataType: 'html',
+
+                success:function(html){
+                    $("#msg").val("==================发送成功=================");
+                }
+
+            });
+        }
+    </script>
 </body>
 </html>

@@ -1,6 +1,7 @@
 var mongo = require('mongodb').MongoClient
   , dbConfig = { dbURL: 'mongodb://127.0.0.1:27017/chat' }
-  , fs = require('fs');
+  , fs = require('fs')
+  , blacklist = require('../common/blacklist')
 
 var DEBUG = true;
 
@@ -8,6 +9,11 @@ var DEBUG = true;
  * 登录处理
  */
 exports.doLogin = function(req, res){
+	if (!blacklist.check(req, 5, 5)){
+		res.send(404)
+		return;
+	}
+
 	var id = parseInt(req.body.id.trim())
       , password = req.body.password.trim();
 
@@ -27,15 +33,14 @@ exports.doLogin = function(req, res){
     	return
     }
     // 导入模块
-	var sise = require("../common/sise/login")
-	  , course = require("../common/sise/course")
+	var sise = require("../common/sise")
 	  , md5 = require("md5")
 
 	// 登录处理
 	sise.login(id, password, function(status, cookie) {
 		// 登录结果状态判断
 		if (status == 0){ // 登录失败
-			res.render('login', { info: '登录失败！' });
+			res.send(404)
 		}else{ // 登录成功
 		  	mongo.connect(dbConfig.dbURL, function(err, db) {
 		    	if(err) throw err;
@@ -43,9 +48,17 @@ exports.doLogin = function(req, res){
 		    	var Users = db.collection('user');
 		    	Users.find({"uid": id}).toArray(function(err, results) {
 
+		    		// 统计登录
+		    		var statistics = db.collection('statistics')
+		    		var data = {"uid" : id, date : Date()}
+		    		statistics.insert(data, function(err, docs) {})
+
 		    		// 第一次登录该系统
 		    		if (results.length == 0){
-		    			course.get(cookie, function(courseData){
+		    			sise.getCourseInfo(cookie, function(courseData){
+
+				    		var Groups = db.collection('groups');
+
 		    				// 添加在线交流群
 		    				var courseDatas = [
 			    				{
@@ -54,15 +67,35 @@ exports.doLogin = function(req, res){
 			    					name: "在线交流群"
 			    				}
 		    				]
+		    				Groups.update({"gid": courseDatas[0].uid}, {"$push": {"people": id}}, function(err, docs) {})
+
 		    				// 读取课程信息
+		    				var tempHash = {}
 		    				courseData[1].forEach(function(elem){
-		    					courseDatas.push({
-		    						uid: md5(elem.name + "@" + elem.class),
-		    						avatar: "group.png",
-		    						name: elem.name + " @ " + elem.class,
-		    						teacher: elem.teacher,
-		    						place: elem.place
-		    					})
+
+		    					var md5ID = md5(elem.name + "@" + elem.class)
+
+		    					if (tempHash[md5ID] == null){
+			    					
+				    				Groups.findOne({"gid": md5ID}, function(err, result){
+				    					if (result == null){
+				    						Groups.insert({"gid": md5ID, "people": [id]}, function(err, docs) {})
+				    					}else{
+				    						Groups.update({"gid": md5ID}, 
+				    									  {"$push": {"people": id}},
+				    									  function(err, docs) {})
+				    					}
+				    				})
+
+			    					courseDatas.push({
+			    						uid: md5ID,
+			    						avatar: "group.png",
+			    						name: elem.name + " @ " + elem.class,
+			    						teacher: elem.teacher,
+			    						place: elem.place
+			    					})
+			    					tempHash[md5ID] = true;
+		    					}
 		    				})
 
 			    			var userData = {
@@ -105,6 +138,8 @@ exports.getFriends = function (req, res){
 		return;
 	}
 	mongo.connect(dbConfig.dbURL, function(err, db) {
+
+
 		var Users = db.collection('user')
 		  , id = req.session.user
 		Users.findOne({"uid": id}, function(err, result){
@@ -211,14 +246,19 @@ exports.doAddFriend = function (req, res) {
 	})
 }
 
+
 /**
  * 反馈信息处理
  */
 exports.doFeedback = function(req, res){
+	if (!blacklist.check(req, 5, 10)){
+		res.send(404)
+		return;
+	}
 	if (req.body.con){
-    // 生成数据
+    	// 生成数据
 		var data = {
-			date: DataFormat(),
+			date: DateFormat(),
 			ip: getClientIp(req),
 			browser: req.headers['user-agent'],
 			content: req.body.con
@@ -233,4 +273,57 @@ exports.doFeedback = function(req, res){
 			});
 		})
 	}
+};
+
+/**
+ * 管理员信息群发
+ */
+exports.doMassByAdmin = function(req, res){
+	if (getClientIp(req) != "127.0.0.1") return;
+	if (req.body.con){
+		var data = {
+			from: {
+                uid: 10086,
+                name: "萌萌的管理员",
+                avatar: "admin.png"
+            },
+			con: req.body.con,
+        	date: new Date()
+		}
+		// 插入数据
+		mongo.connect(dbConfig.dbURL, function(err, db) {
+			var Users = db.collection('user');
+			Users.update({}, {"$push": {"messages": data}}, {multi: true}, function(err, docs){
+				res.send("success")
+        		db.close();
+			});
+		})
+	}
+}
+
+/**
+ * 时间格式转换，格式 yyyy/mm/dd
+ */
+function DateFormat() {
+	var now = new Date()
+	  , y = now.getFullYear()
+	  , m = now.getMonth() + 1
+	  , d = now.getDate()
+	  , result = "";
+	result += y;
+	result += "/"
+	result += m < 10 ? "0" + m : m;
+	result += "/"
+	result += d < 10 ? "0" + d : d;
+	return result;
+}
+
+/**
+ * 获取客户端IP
+ */
+function getClientIp(req) {
+	return req.headers['x-forwarded-for'] ||
+	req.connection.remoteAddress ||
+	req.socket.remoteAddress ||
+	req.connection.socket.remoteAddress;
 };

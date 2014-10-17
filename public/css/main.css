@@ -60,8 +60,6 @@
     border-bottom: 1px solid #e8e8e8;
     margin-left: -40px;
     cursor: pointer;
-     transition: all 0.5s;
-    -webkit-transition: all 0.5s;
 }
 
 .friend-list li:hover {

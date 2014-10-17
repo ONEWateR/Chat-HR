@@ -47,6 +47,7 @@ app.post('/do/feedback', action.doFeedback);
 app.post('/do/login', action.doLogin);
 app.post('/do/upload', action.doUpdateInfo);
 app.post('/do/addfriend', action.doAddFriend);
+app.post('/do/mass', action.doMassByAdmin);
 
 // 信息返回
 app.get('/get/friends', action.getFriends);
@@ -60,4 +61,4 @@ server.listen(app.get('port'), function(){
 });
 
 // 启动聊天相关操作
-require("./common/chat/init").init(server)
+require("./common/chat").init(server)

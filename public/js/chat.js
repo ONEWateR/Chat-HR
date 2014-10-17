@@ -1,3 +1,28 @@
+var SaveUtils = (function (){
+    var checkLocalStorage = function(){
+        if(!window.localStorage){
+            alert('你使用的浏览器不支持localStorage， 请使用高级点的浏览器(喂');
+        }
+    }
+    var STATIC = {
+        get : function(key, defaultValue) {
+            if (localStorage[key])
+                return JSON.parse(localStorage[key])
+            else
+                return defaultValue
+        },
+        save : function(key, value){
+            localStorage[key] = JSON.stringify(value);
+        },
+        clear: function(key){
+            localStorage.removeItem(key)
+        }
+    }
+    return STATIC;
+})();
+
+
+
 /**
  * 全局变量声明
  */
@@ -40,6 +65,7 @@ var notify = {
         document.title = notify.title;  
     }  
 };  
+
 
 
 emojify.setConfig({
@@ -88,11 +114,8 @@ function Init(){
         }
     })
     // 获取历史对话信息
-    if($.cookie("history")){
-        HISTORY = JSON.parse($.cookie("history"))
-    }else{
-        HISTORY = {}
-    }
+    HISTORY = SaveUtils.get("historyData", {})
+    
     // 处理提醒模块
     handleNotify()
 }
@@ -201,7 +224,6 @@ function sendMessage(){
  */
 
 socket.on('say', function (data) {
-    
     // 群聊信息的话
     if (data.to.match(reg)){
         if (CurrentID == data.to){
@@ -273,21 +295,13 @@ function saveChatInfo(data){
         HISTORYKEY.push(id)
     }
     HISTORY[id].push(data)
-
-    // 调换key
-    if (HISTORYKEY[0] != id){
-        var index = HISTORYKEY.indexOf(id)
-          , temp = HISTORYKEY[0]
-        HISTORYKEY[0] = id
-        HISTORYKEY[index] = temp
-    }
     
     // 当前为最近tab则刷新左侧列表数据
     // TODO: 避免频繁刷新
     if ($(".list-type li[id=1]").hasClass("active"))
         refreshList(1)
 
-    $.cookie("history", JSON.stringify(HISTORY), {expires : 365});
+    SaveUtils.save("historyData", HISTORY);
 }
 
 
@@ -350,18 +364,22 @@ function getListData(type) {
     var result = []
     switch(type){
         case 1: // 最近，读取cookie获取
-            HISTORYKEY.forEach(function(i){
-                if (i == 0) return;
-                var user = getUserInfo(i)
+            for(var id in HISTORY){
+                var user = getUserInfo(id)
+                  , lastMessage = HISTORY[user.uid][HISTORY[user.uid].length - 1]
                 result.push({
                     user: {
                         id: user.uid,
                         name: user.name,
                         avatar: user.avatar
                     },
-                    last: HISTORY[user.uid][HISTORY[user.uid].length - 1].con,
-                    noread: getNORead(user.uid)
+                    last: lastMessage.con,
+                    noread: getNORead(user.uid),
+                    date: lastMessage.date
                 })
+            }
+            result = result.sort(function(a, b){
+                return a.date > b.date ? -1 : 1;
             })
             break;
         case 2: // 好友列表
@@ -406,8 +424,15 @@ function getUserInfo(uid){
         if (USERS[i].uid == uid)
             return USERS[i]
     }
+    if (uid == 10086) {
+        return {
+            uid: 10086,
+            name: "萌萌哒☆管理员",
+            avatar: "admin.png"
+        }
+    }
     return  {
-                id: 0,
+                uid: 0,
                 name: "unkonw",
                 avatar: "unkonw.jpg"
             }
@@ -513,7 +538,7 @@ function showEmoji(){
 }
 
 document.onkeydown = function(){
-    if (window.event.keyCode == 17){
+    if (event.ctrlKey && window.event.keyCode == 81){
         showEmoji();
     }
 };
@@ -524,3 +549,6 @@ refreshList(3)
 CurrentID = "c4ca4238a0b923820dcc509a6f75849b"
 createChatContent(HISTORY["c4ca4238a0b923820dcc509a6f75849b"])
 $("#enter-text").focus()
+
+
+
