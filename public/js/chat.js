@@ -296,14 +296,6 @@ function saveChatInfo(data){
         HISTORYKEY.push(id)
     }
     HISTORY[id].push(data)
-
-    // 调换key
-    if (HISTORYKEY[0] != id){
-        var index = HISTORYKEY.indexOf(id)
-          , temp = HISTORYKEY[0]
-        HISTORYKEY[0] = id
-        HISTORYKEY[index] = temp
-    }
     
     // 当前为最近tab则刷新左侧列表数据
     // TODO: 避免频繁刷新
@@ -373,18 +365,22 @@ function getListData(type) {
     var result = []
     switch(type){
         case 1: // 最近，读取cookie获取
-            HISTORYKEY.forEach(function(i){
-                if (i == 0) return;
-                var user = getUserInfo(i)
+            for(var id in HISTORY){
+                var user = getUserInfo(id)
+                  , lastMessage = HISTORY[user.uid][HISTORY[user.uid].length - 1]
                 result.push({
                     user: {
                         id: user.uid,
                         name: user.name,
                         avatar: user.avatar
                     },
-                    last: HISTORY[user.uid][HISTORY[user.uid].length - 1].con,
-                    noread: getNORead(user.uid)
+                    last: lastMessage.con,
+                    noread: getNORead(user.uid),
+                    date: lastMessage.date
                 })
+            }
+            result = result.sort(function(a, b){
+                return a.date > b.date ? -1 : 1;
             })
             break;
         case 2: // 好友列表
