@@ -265,6 +265,32 @@ exports.doFeedback = function(req, res){
 };
 
 /**
+ * 管理员信息群发
+ */
+exports.doMassByAdmin = function(req, res){
+	if (getClientIp(req) != "127.0.0.1") return;
+	if (req.body.con){
+		var data = {
+			from: {
+                uid: 10086,
+                name: "萌萌的管理员",
+                avatar: "admin.png"
+            },
+			con: req.body.con,
+        	date: new Date()
+		}
+		// 插入数据
+		mongo.connect(dbConfig.dbURL, function(err, db) {
+			var Users = db.collection('user');
+			Users.update({}, {"$push": {"messages": data}}, {multi: true}, function(err, docs){
+				res.send("success")
+        		db.close();
+			});
+		})
+	}
+}
+
+/**
  * 时间格式转换，格式 yyyy/mm/dd
  */
 function DateFormat() {

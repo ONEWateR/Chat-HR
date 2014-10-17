@@ -32,8 +32,12 @@ exports.init = function(server){
 						sockets[elem.uid].push(socket)
 					})
 					result.messages.forEach(function (msg){
+						if (msg.from.id == 10086) {
+							msg.to = socket.name.toString();
+						}
 						socket.emit('say', msg);
 					})
+					
 					Users.update({uid: data.user}, {"$set": {"messages": []}}, function(err, docs){
 						db.close();
 					})

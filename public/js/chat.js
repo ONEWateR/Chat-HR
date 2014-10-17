@@ -224,7 +224,6 @@ function sendMessage(){
  */
 
 socket.on('say', function (data) {
-    
     // 群聊信息的话
     if (data.to.match(reg)){
         if (CurrentID == data.to){
@@ -424,6 +423,13 @@ function getUserInfo(uid){
     for (var i = 0; i < USERS.length; i++){
         if (USERS[i].uid == uid)
             return USERS[i]
+    }
+    if (uid == 10086) {
+        return {
+            id: 10086,
+            name: "萌萌哒☆管理员",
+            avatar: "admin.png"
+        }
     }
     return  {
                 id: 0,
