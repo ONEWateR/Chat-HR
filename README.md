@@ -8,6 +8,7 @@ Chat-HR
 - 自动创建班群
 - 群聊 + 私聊
 - 表情聊天
+- 离线信息
 
 ![image](http://ntu.so/di/5LCKJ/hr-chat.png)
 
