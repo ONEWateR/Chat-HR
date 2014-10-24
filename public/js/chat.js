@@ -142,7 +142,6 @@ function initEmojify() {
         }
     });
 
-    emojify.run();
 }
 
 
@@ -206,7 +205,7 @@ function appendChat(con, single){
         $("#chat-content li:last").animate({opacity:'1'}, 800)
     }
 
-    emojify.run();
+    emojify.run($("#chat-content"));
 }
 
 /**
@@ -363,7 +362,7 @@ function refreshList(type){
                     <img class='avatar' src='img/upload/{3}' />\
                     <div class='list-item-info'>\
                         <p class='user-name'>{0}</p>\
-                        <last class='last-info'>{1}</last>\
+                        <p class='last-info'>{1}</p>\
                     </div>\
                     <span class='badge pull-right'>{2}</span>\
                     <div class='clearfix'></div>\

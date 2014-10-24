@@ -87,6 +87,13 @@
 }
 .list-item-info .last-info {
     color: #999;
+    overflow: hidden;
+    height: 16px;
+    padding: 2px 0;
+    text-overflow: ellipsis;
+    width: 280px;
+    position: relative;
+    top: 4px;
 }
 
 .friend-list {
