@@ -1,3 +1,18 @@
+/**
+ * 全局变量声明
+ */
+
+var APP = {
+    userID: parseInt($.cookie("user")),
+    history: {},
+    usersData: {},
+    currentId: 0,
+    socket: io('http://172.16.103.36:3000')
+}
+
+/**
+ * 本地存储模块
+ */
 var SaveUtils = (function (){
     var checkLocalStorage = function(){
         if(!window.localStorage){
@@ -21,20 +36,6 @@ var SaveUtils = (function (){
     return STATIC;
 })();
 
-
-
-/**
- * 全局变量声明
- */
-
-var ID = parseInt($.cookie("user"))
-  , HISTORY = {}
-  , HISTORYKEY = []
-  , USERS = []
-  , CurrentID = 0
-  , NOREAD = {}
-  , socket = io('http://172.16.103.36:3000')
-var reg = /[a-z]/
 
 /**
  * 提醒模块
@@ -66,40 +67,43 @@ var notify = {
     }  
 };  
 
-
-
-emojify.setConfig({
-
-    only_crawl_id    : null,            // Use to restrict where emojify.js applies
-    img_dir          : 'img/emoji',     // Directory for emoji images
-    ignored_tags     : {                // Ignore the following tags
-        'SCRIPT'  : 1,
-        'TEXTAREA': 1,
-        'A'       : 1,
-        'PRE'     : 1,
-        'CODE'    : 1
-    }
-});
-
-emojify.run();
-
-Init();
-
-
-
 /**
- * 初始化操作
+ * 未读模块
  */
-function Init(){
+
+var UnreadModule = {
+    data: {},
+    setUnread: function(id, num) {
+        this.data[id] = num;
+        this.display(id)
+    },
+    addUnread: function(id) {
+        if (!this.data[id]) this.data[id] = 0;
+        this.data[id] += 1;
+        this.display(id)
+    },
+    getDisplayString: function(id) {
+        var showString = "";
+        if (this.data[id] && this.data[id] != 0) showString = this.data[id];
+        return showString;
+    },
+    display: function(id) {
+        var showString = this.getDisplayString(id);
+        $(".friend-list li[id="+ id +"] .pull-right").html(showString);
+    }
+}
+
+
+APP.init = function() {
     // 发送用户上线信号
-    socket.emit('online', {user: ID});
+    APP.socket.emit('online', {user: APP.userID});
     // 获取好友以及班群信息
     $.ajax({
         type: "GET",
         url: "/get/friends",
         success: function(data){
             data.forEach(function(elem){
-                USERS.push(elem)
+                APP.usersData[elem.uid] = elem
             })
         }
     })
@@ -108,17 +112,40 @@ function Init(){
         url: "/get/groups",
         success: function(data){
             data.forEach(function(elem){
-                USERS.push(elem)
+                APP.usersData[elem.uid] = elem
             })
-            refreshList(3)
         }
     })
     // 获取历史对话信息
-    HISTORY = SaveUtils.get("historyData", {})
+    APP.history = SaveUtils.get("historyData", {})
     
     // 处理提醒模块
     handleNotify()
+
+    initEmojify();
 }
+
+APP.init();
+
+function initEmojify() {
+    emojify.setConfig({
+
+        only_crawl_id    : null,
+        img_dir          : 'img/emoji',
+        ignored_tags     : {
+            'SCRIPT'  : 1,
+            'TEXTAREA': 1,
+            'A'       : 1,
+            'PRE'     : 1,
+            'CODE'    : 1,
+            'LAST'    : 1
+        }
+    });
+
+    emojify.run();
+}
+
+
 
 
 /**
@@ -128,7 +155,7 @@ function Init(){
  */
 
 function createChatContent(contents){
-    if (typeof(contents) == "undefined") contents = []
+    contents = contents || []
     // 清空内容
     $(".chat-content").html("")
     for (var i = 0; i < contents.length; i++){
@@ -147,17 +174,17 @@ function createChatContent(contents){
  */
 
 function appendChat(con, single){
-    if (typeof(single) == "undefined") single = true;
+    single = single || true;
 
     // TODO:有点烦琐，将就用着
     var c = $("#chat-content")
       , type = ["left-chat", "right-chat", "fr"]
       , from = con.from.uid
       , style = [
-            from == ID ? type[1] : type[0],
-            from == ID ? type[2] : "",
-            from == ID ? ID : from,
-            from == ID ? "" : con.from.name
+            from == APP.userID ? type[1] : type[0],
+            from == APP.userID ? type[2] : "",
+            from == APP.userID ? APP.userID : from,
+            from == APP.userID ? "" : con.from.name
         ]
 
     // 添加对话框
@@ -188,7 +215,7 @@ function appendChat(con, single){
 
 function sendMessage(){
     // 未选择聊天对象直接返回
-    if (CurrentID == 0) return;
+    if (APP.currentId == 0) return;
 
     // 预处理发送信息
     var box = $("#enter-text")
@@ -201,14 +228,14 @@ function sendMessage(){
     
     // 整理信息
     content = {
-        from: getUserInfo(ID),
-        to: CurrentID,
+        from: getUserInfo(APP.userID),
+        to: APP.currentId,
         con: msg,
         date: new Date()
     }
 
     // 发送
-    socket.emit('say', content);
+    APP.socket.emit('say', content);
 
     // 页面表现
     box.val("")
@@ -223,21 +250,21 @@ function sendMessage(){
  * @param {Object} 收到的数据
  */
 
-socket.on('say', function (data) {
+APP.socket.on('say', function (data) {
     // 群聊信息的话
-    if (data.to.match(reg)){
-        if (CurrentID == data.to){
+    if (user.uid(data.to)){
+        if (APP.currentId == data.to){
             appendChat(data);
         }else{
-            setNORead(data.to, -1) // 设置未读标记
+            UnreadModule.addUnread(data.to)
         }
     }else{
         // 如果信息发送对象包括你，并且当前的聊天窗口属于发送来源
-        if (data.to == ID){
-            if (data.from.uid == CurrentID){
+        if (data.to == APP.userID){
+            if (data.from.uid == APP.currentId){
                 appendChat(data)
             }else{
-                setNORead(data.from.uid, -1) // 设置未读标记
+                UnreadModule.addUnread(data.to)
             }
         }
     }
@@ -287,21 +314,20 @@ function handleNotify(){
  */
 
 function saveChatInfo(data){
-    // 获取ID
+    // 获取APP.userID
     var id = data.from.uid
-    if (id == ID || data.to.toString().match(reg)) id = data.to
-    if (typeof(HISTORY[id]) == "undefined") {
-        HISTORY[id] = []
-        HISTORYKEY.push(id)
+    if (id == APP.userID || isGroup(data.to)) id = data.to
+    if (typeof(APP.history[id]) == "undefined") {
+        APP.history[id] = []
     }
-    HISTORY[id].push(data)
+    APP.history[id].push(data)
     
     // 当前为最近tab则刷新左侧列表数据
     // TODO: 避免频繁刷新
     if ($(".list-type li[id=1]").hasClass("active"))
         refreshList(1)
 
-    SaveUtils.save("historyData", HISTORY);
+    SaveUtils.save("historyData", APP.history);
 }
 
 
@@ -337,7 +363,7 @@ function refreshList(type){
                     <img class='avatar' src='img/upload/{3}' />\
                     <div class='list-item-info'>\
                         <p class='user-name'>{0}</p>\
-                        <p class='last-info'>{1}</p>\
+                        <last class='last-info'>{1}</last>\
                     </div>\
                     <span class='badge pull-right'>{2}</span>\
                     <div class='clearfix'></div>\
@@ -346,7 +372,7 @@ function refreshList(type){
         }
 
         // 页面表现
-        $(".friend-list li[id='"+ CurrentID +"']").addClass("active")
+        $(".friend-list li[id='"+ APP.currentId +"']").addClass("active")
         friendList.animate({opacity:'1'}, 0)
 
         // 重新注册点击事件
@@ -364,9 +390,9 @@ function getListData(type) {
     var result = []
     switch(type){
         case 1: // 最近，读取cookie获取
-            for(var id in HISTORY){
+            for(var id in APP.history){
                 var user = getUserInfo(id)
-                  , lastMessage = HISTORY[user.uid][HISTORY[user.uid].length - 1]
+                  , lastMessage = APP.history[user.uid][APP.history[user.uid].length - 1]
                 result.push({
                     user: {
                         id: user.uid,
@@ -374,7 +400,7 @@ function getListData(type) {
                         avatar: user.avatar
                     },
                     last: lastMessage.con,
-                    noread: getNORead(user.uid),
+                    noread: UnreadModule.getDisplayString(user.uid),
                     date: lastMessage.date
                 })
             }
@@ -383,8 +409,9 @@ function getListData(type) {
             })
             break;
         case 2: // 好友列表
-            USERS.forEach(function (user) {
-                if (typeof(user.uid) != "string" && user.uid != ID)
+            for(var id in APP.usersData){
+                var user = getUserInfo(id)
+                if (typeof(user.uid) != "string" && user.uid != APP.userID)
                 result.push({
                     user: {
                         id: user.uid,
@@ -392,13 +419,14 @@ function getListData(type) {
                         avatar: user.avatar
                     },
                     last: "",
-                    noread: getNORead(user.uid)
+                    noread: UnreadModule.getDisplayString(user.uid)
                 })
-            })
+            }
             break;
         case 3: // ONLY TEST
-            USERS.forEach(function (user) {
-                if (user.uid.toString().match(reg))
+            for(var id in APP.usersData){
+                var user = getUserInfo(id)
+                if (isGroup(user.uid))
                 result.push({
                     user: {
                         id: user.uid,
@@ -406,9 +434,9 @@ function getListData(type) {
                         avatar: user.avatar
                     },
                     last: "",
-                    noread: getNORead(user.uid)
+                    noread: UnreadModule.getDisplayString(user.uid)
                 })
-            })
+            }
             break;
     }
     return result;
@@ -420,10 +448,6 @@ function getListData(type) {
  */
 
 function getUserInfo(uid){
-    for (var i = 0; i < USERS.length; i++){
-        if (USERS[i].uid == uid)
-            return USERS[i]
-    }
     if (uid == 10086) {
         return {
             uid: 10086,
@@ -431,6 +455,8 @@ function getUserInfo(uid){
             avatar: "admin.png"
         }
     }
+    if (APP.usersData[uid])
+        return APP.usersData[uid];
     return  {
                 uid: 0,
                 name: "unkonw",
@@ -449,48 +475,13 @@ function registerClickEvent(){
             $(".friend-list li").removeClass("active")
             $(this).addClass("active")
             var id = $(this).attr("id")
-            CurrentID = id
-            createChatContent(HISTORY[id])
-            setNORead(CurrentID, 0)
+            APP.currentId = id
+            createChatContent(APP.history[id])
+            UnreadModule.setUnread(APP.currentId, 0)
         }
     })
 }
 
-/**
- * TODO: 设置未读数据
- * @param {Number} id
- * @param {Number} -1: 原数据+1, 
-                   other: 正常设置
- */
-
-
-function setNORead(id, num){
-    if (typeof(NOREAD[id]) == "undefined") 
-        NOREAD[id] = 0
-    if (num == -1){
-        NOREAD[id]++
-    }else{
-        NOREAD[id] = num
-    }
-
-
-    $(".friend-list li[id="+ id +"] .pull-right").html(getNORead(id));
-}
-
-/**
- * TODO: 获取未读数据
- * @param {Number} id
- */
-
-function getNORead(id){
-    if (typeof(NOREAD[id]) == "undefined") 
-        NOREAD[id] = 0
-    if (NOREAD[id] == 0){
-        return ""
-    }else{
-        return NOREAD[id]
-    }
-}
 
 /**
  * 格式化输入字符串。
@@ -543,12 +534,17 @@ document.onkeydown = function(){
     }
 };
 
-$(".list-type li").removeClass("active")
-$(".list-type li[id=3]").addClass("active")
-refreshList(3)
-CurrentID = "c4ca4238a0b923820dcc509a6f75849b"
-createChatContent(HISTORY["c4ca4238a0b923820dcc509a6f75849b"])
-$("#enter-text").focus()
+function isGroup(id) {
+    return id.toString().match(/[a-z]/);
+}
 
+$(".list-type li").removeClass("active")
+$(".list-type li[id=1]").addClass("active")
+
+APP.currentId = "c4ca4238a0b923820dcc509a6f75849b"
+createChatContent(APP.history["c4ca4238a0b923820dcc509a6f75849b"])
+
+$("#enter-text").focus()
+refreshList(3)
 
 
