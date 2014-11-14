@@ -35,15 +35,16 @@ exports.login = function (id, pwd, callback) {
 	}
 
 	var req = http.request(options, function(res){  
-	    var cookies = res.headers["set-cookie"],
-	    	content = ""
+	    var cookies = res.headers["set-cookie"]
+	    var content = ""
+	    
 	    res.on("data", function (chunk){ 
 	    	content += chunk
 	    })
 
 	    res.on("end", function () {
-	    	var html = content;
-	    		status = 1
+	    	var html = content
+	    	var status = 1
 	    	// 登录失败判断
 	    	if (html.indexOf("error") != -1)
 	    		status = 0
@@ -92,18 +93,21 @@ exports.getCourseInfo = function (cookie, callback) {
  * 解析课程页面，获取课程信息
  */
 function parsers(html){
-	var result = []
+	var courseData = []
 	  , i = 0
-	  , reg = /(.*?(?:\(.*?\))*)\((.*?)\s(.*?)\s(\d.*?)周\s\[(.*?)\]\)/
 	  , $ = cheerio.load(html);
-	// 获取姓名的正则表达式 ： 
+	
 	var username = html.match(/姓名\:\s(.*?)\s/)[1]
+	
+	// 添加在线交流群
+	courseData.push(getOnlineGroup());
+
     // 遍历所有<td align='left' ...>元素
 	$("td[align='left']").each(function(index, element){
 		i++
-		var match = $(element).text().trim().match(reg) // 正则解析
+		var match = $(element).text().trim().match(/(.*?(?:\(.*?\))*)\((.*?)\s(.*?)\s(\d.*?)周\s\[(.*?)\]\)/) // 正则解析
 		if (match) {
-			result.push({
+			courseData.push({
 				name: match[1],
 				class: match[2],
 				teacher: match[3],
@@ -113,7 +117,21 @@ function parsers(html){
 			})
 		}
 	})
-	return [username, result]
+	var result = {
+		"username": username, 
+		"courseData": courseData
+	}
+	return result
+
 }
 
-
+function getOnlineGroup(){
+	return {
+		name: "在线交流群",
+		class: "",
+		teacher: "",
+		weeks: [],
+		place: "",
+		time: ""
+	}
+}

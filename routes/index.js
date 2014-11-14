@@ -1,5 +1,4 @@
-var mongo = require('mongodb').MongoClient
-  , dbConfig = { dbURL: 'mongodb://127.0.0.1:27017/chat' }
+var mongo = require('../common/mongo')
   
 
 /**
@@ -41,14 +40,15 @@ exports.login = function(req, res){
  */
 exports.admin = function(req, res){
 	// 判断是否在服务器登录
-	if (getClientIp(req) != "127.0.0.1"){
+	if (req.ip != "127.0.0.1"){
 		res.send("404")
 		return
 	}
 	// 获取反馈信息
 	var fbdata = {};
-	mongo.connect(dbConfig.dbURL, function(err, db) {
-		if(err) throw err;
+	mongo.connect(function(err, db) {
+		if(err) mongo.error(err);
+		
 		var collection = db.collection('feedback');
 		collection.find().toArray(function(err, results) {
 			fbdata = eval(results)
@@ -65,8 +65,8 @@ exports.admin = function(req, res){
  */
 exports.setting = function(req, res){
 	if (!req.session.user) res.redirect("/")
-	mongo.connect(dbConfig.dbURL, function(err, db) {
-		if(err) throw err;
+	mongo.connect(function(err, db) {
+		if(err) mongo.error(err);
 		var Users = db.collection('user')
 		Users.findOne({uid: req.session.user}, function(err, doc){
 			db.close()
@@ -78,14 +78,4 @@ exports.setting = function(req, res){
 		})
 	})
 
-};
-
-/**
- * 获取客户端IP
- */
-function getClientIp(req) {
-	return req.headers['x-forwarded-for'] ||
-	req.connection.remoteAddress ||
-	req.socket.remoteAddress ||
-	req.connection.socket.remoteAddress;
 };

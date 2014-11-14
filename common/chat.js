@@ -3,10 +3,7 @@ exports.init = function(server){
 
 	var io = require('socket.io')(server)
 	  , sockets = {}
-	  , mongo = require('mongodb').MongoClient
-	  , dbConfig = {
-	    	dbURL: 'mongodb://127.0.0.1:27017/chat'
-	    }
+	  , mongo = require('../common/mongo')
 
 	io.on('connection', function(socket){
 
@@ -18,8 +15,9 @@ exports.init = function(server){
 			socket.name = data.user;
 			
 			// 获取用户的群ID
-			mongo.connect(dbConfig.dbURL, function(err, db) {
-				if(err) throw err;
+			mongo.connect(function(err, db) {
+				if(err) mongo.error(err);
+
 				var Users = db.collection('user');
 				Users.findOne({"uid": data.user}, {"groups": 1, "_id": 0, "messages": 1}, function(err, result) {
 					result.groups.forEach(function (elem){
@@ -27,7 +25,7 @@ exports.init = function(server){
 						 * 将该用户的socket添加到群数组中，
 						 * 以后发送信息只需要在该数组的每一个socket发送即可达到群聊的效果
 						 */
-						if (typeof(sockets[elem.uid]) == "undefined")
+						if (!sockets[elem.uid]) 
 							sockets[elem.uid] = []
 						sockets[elem.uid].push(socket)
 					})
@@ -53,7 +51,7 @@ exports.init = function(server){
 			var id = data.to;
 			var reg = /[a-z]/
 			if (id.match(reg)) {
-				mongo.connect(dbConfig.dbURL, function(err, db) {
+				mongo.connect(function(err, db) {
 
 					var Groups = db.collection('groups');
 

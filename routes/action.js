@@ -1,5 +1,4 @@
-var mongo = require('mongodb').MongoClient
-  , dbConfig = { dbURL: 'mongodb://127.0.0.1:27017/chat' }
+var mongo = require('../common/mongo')
   , fs = require('fs')
   , blacklist = require('../common/blacklist')
 
@@ -42,41 +41,31 @@ exports.doLogin = function(req, res){
 		if (status == 0){ // 登录失败
 			res.send(404)
 		}else{ // 登录成功
-		  	mongo.connect(dbConfig.dbURL, function(err, db) {
-		    	if(err) throw err;
+		  	mongo.connect(function(err, db) {
+		    	if(err) mongo.error(err);
 		    	
 		    	var Users = db.collection('user');
 		    	Users.find({"uid": id}).toArray(function(err, results) {
 
 		    		// 统计登录
 		    		var statistics = db.collection('statistics')
-		    		var data = {"uid" : id, date : Date()}
+		    		var data = {"uid" : id, date : new Date().getTime()}
 		    		statistics.insert(data, function(err, docs) {})
 
-		    		// 第一次登录该系统
 		    		if (results.length == 0){
-		    			sise.getCourseInfo(cookie, function(courseData){
+		    			// 第一次登录该系统，获取用户信息并写入至数据库
+		    			sise.getCourseInfo(cookie, function(courseInfo){
 
 				    		var Groups = db.collection('groups');
+		    				var groupsData = []
 
-		    				// 添加在线交流群
-		    				var courseDatas = [
-			    				{
-			    					uid: "c4ca4238a0b923820dcc509a6f75849b",
-			    					avatar: "group.png",
-			    					name: "在线交流群"
-			    				}
-		    				]
-		    				Groups.update({"gid": courseDatas[0].uid}, {"$push": {"people": id}}, function(err, docs) {})
+							// 读取课程信息
+		    				var tempHash = {} // 避免出现重复班群
 
-		    				// 读取课程信息
-		    				var tempHash = {}
-		    				courseData[1].forEach(function(elem){
-
+		    				courseInfo.courseData.forEach(function(elem){
 		    					var md5ID = md5(elem.name + "@" + elem.class)
-
 		    					if (tempHash[md5ID] == null){
-			    					
+
 				    				Groups.findOne({"gid": md5ID}, function(err, result){
 				    					if (result == null){
 				    						Groups.insert({"gid": md5ID, "people": [id]}, function(err, docs) {})
@@ -87,7 +76,7 @@ exports.doLogin = function(req, res){
 				    					}
 				    				})
 
-			    					courseDatas.push({
+			    					groupsData.push({
 			    						uid: md5ID,
 			    						avatar: "group.png",
 			    						name: elem.name + " @ " + elem.class,
@@ -100,10 +89,10 @@ exports.doLogin = function(req, res){
 
 			    			var userData = {
 			    				uid: id,
-			    				name: courseData[0],
+			    				name: courseInfo.username,
 			    				avatar: "user.jpg",
 			    				friends: [],
-			    				groups: courseDatas 
+			    				groups: groupsData 
 			    			}
 
 			    			// 插入数据库中
@@ -137,9 +126,7 @@ exports.getFriends = function (req, res){
 		res.send("ERROR!!");
 		return;
 	}
-	mongo.connect(dbConfig.dbURL, function(err, db) {
-
-
+	mongo.connect(function(err, db) {
 		var Users = db.collection('user')
 		  , id = req.session.user
 		Users.findOne({"uid": id}, function(err, result){
@@ -170,8 +157,8 @@ exports.getFriends = function (req, res){
  * 返回JSON
  */
 exports.getGroups = function (req, res){
-	mongo.connect(dbConfig.dbURL, function(err, db) {
-		if(err) throw err;
+	mongo.connect(function(err, db) {
+		if(err) mongo.error(err);
 		var Users = db.collection('user')
 		  , id = req.session.user
 		var limit = {
@@ -203,8 +190,8 @@ exports.doUpdateInfo = function (req, res) {
 	var newname = req.body.username
 	  , newavatar = target_path.substring(target_path.lastIndexOf("\\") + 1, target_path.length)
 	// 更新数据库
-	mongo.connect(dbConfig.dbURL, function(err, db) {
-		if(err) throw err;
+	mongo.connect(function(err, db) {
+		if(err) mongo.error(err);
 		var Users = db.collection('user')
 		Users.update({uid: req.session.user}, {$set: {"name": newname, "avatar": newavatar}}, function(err, docs){
 			res.redirect("/setting")
@@ -227,8 +214,8 @@ exports.doAddFriend = function (req, res) {
 		res.send(404, "error");
 		return
 	}
-	mongo.connect(dbConfig.dbURL, function(err, db) {
-		if(err) throw err;
+	mongo.connect(function(err, db) {
+		if(err) mongo.error(err);
 		var Users = db.collection('user')
 		Users.findOne({uid: req.session.user}, function(err, doc){
 			console.log(friendID)
@@ -259,13 +246,13 @@ exports.doFeedback = function(req, res){
     	// 生成数据
 		var data = {
 			date: DateFormat(),
-			ip: getClientIp(req),
+			ip: req.ip,
 			browser: req.headers['user-agent'],
 			content: req.body.con
 		}
 		// 插入数据
-		mongo.connect(dbConfig.dbURL, function(err, db) {
-			if(err) throw err;
+		mongo.connect(function(err, db) {
+			if(err) mongo.error(err);
 			var collection = db.collection('feedback');
 			collection.insert(data, function(err, docs) {
         		res.send("success")
@@ -279,7 +266,7 @@ exports.doFeedback = function(req, res){
  * 管理员信息群发
  */
 exports.doMassByAdmin = function(req, res){
-	if (getClientIp(req) != "127.0.0.1") return;
+	if (req.ip != "127.0.0.1") return;
 	if (req.body.con){
 		var data = {
 			from: {
@@ -291,7 +278,7 @@ exports.doMassByAdmin = function(req, res){
         	date: new Date()
 		}
 		// 插入数据
-		mongo.connect(dbConfig.dbURL, function(err, db) {
+		mongo.connect(function(err, db) {
 			var Users = db.collection('user');
 			Users.update({}, {"$push": {"messages": data}}, {multi: true}, function(err, docs){
 				res.send("success")
@@ -317,13 +304,3 @@ function DateFormat() {
 	result += d < 10 ? "0" + d : d;
 	return result;
 }
-
-/**
- * 获取客户端IP
- */
-function getClientIp(req) {
-	return req.headers['x-forwarded-for'] ||
-	req.connection.remoteAddress ||
-	req.socket.remoteAddress ||
-	req.connection.socket.remoteAddress;
-};
